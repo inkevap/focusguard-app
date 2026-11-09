@@ -7,6 +7,7 @@ import com.focusguard.decision.AdaptiveSettings
 import com.focusguard.decision.ImageSensitivity
 import com.focusguard.decision.VigilanceSettings
 import com.focusguard.decision.NewAppsPolicy
+import com.focusguard.decision.PartnerPanel
 import com.focusguard.decision.ProfileLocks
 import com.focusguard.decision.UninstallGuard
 import com.focusguard.model.ApprovalMode
@@ -81,6 +82,7 @@ class ApprovalExecutor(
             key == KEY_SIGN_OUT -> account.signOut()
             key == KEY_ADMIN_OFF -> settings.grantAdminOff(UninstallGuard.grantUntil(clock.nowMs()))
             key == KEY_PARTNER_NOTICES_OFF -> settings.setPartnerNotices(false)
+            key == KEY_PARTNER_PANEL -> applyDecoded(request, PartnerPanel::decode, settings::setPartnerPanel)?.let { return it }
             key == KEY_NEW_APPS -> applyDecoded(request, NewAppsPolicy::decode, settings::setNewApps)?.let { return it }
             key == KEY_DAY_START -> settings.setDayStartMinute(request.payload?.toIntOrNull() ?: return "Solicitud incompleta.")
             key == KEY_PARENTAL_OFF -> settings.setParentalMode(false)
@@ -168,6 +170,7 @@ class ApprovalExecutor(
         const val KEY_PARENTAL_OFF = "parental_off"
         const val KEY_URGE_SHARING_OFF = "urge_sharing_off"
         const val KEY_PARTNER_NOTICES_OFF = "partner_notices_off"
+        const val KEY_PARTNER_PANEL = "partner_panel"
         private const val PREFIX_PROFILE_UNLOCK = "profile_unlock:"
         fun profileUnlock(id: Long) = "$PREFIX_PROFILE_UNLOCK$id"
         private const val PREFIX_STRICT_EXIT = "strict_exit:"

@@ -8,6 +8,7 @@ import com.focusguard.decision.EmbeddedBrowserPolicy
 import com.focusguard.decision.MoodPromptSettings
 import com.focusguard.decision.NewAppsPolicy
 import com.focusguard.decision.AdaptiveSettings
+import com.focusguard.decision.PartnerPanel
 import com.focusguard.decision.ImageAlerts
 import com.focusguard.decision.ImageIncidents
 import com.focusguard.decision.ImageSensitivity
@@ -39,6 +40,16 @@ class SettingsRepository(context: Context) {
     fun setPartnerNotices(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_PARTNER_NOTICES, enabled).apply()
         _partnerNotices.value = enabled
+    }
+
+    private val _partnerPanel = MutableStateFlow(prefs.getString(KEY_PARTNER_PANEL, null)?.let(PartnerPanel::decode) ?: PartnerPanel())
+
+    /** Qué avisos manda el teléfono y qué protecciones valen con compañero, para «Avisarle lo que pasa» y para el modo parental. Quitar algo lo tiene que aprobar el compañero. */
+    val partnerPanel: StateFlow<PartnerPanel> = _partnerPanel.asStateFlow()
+
+    fun setPartnerPanel(value: PartnerPanel) {
+        prefs.edit().putString(KEY_PARTNER_PANEL, value.encode()).apply()
+        _partnerPanel.value = value
     }
 
     private val _serverUrl = MutableStateFlow(prefs.getString(KEY_SERVER_URL, null) ?: BuildConfig.SERVER_URL)
@@ -454,6 +465,7 @@ class SettingsRepository(context: Context) {
         const val KEY_APP_PIN = "app_pin_enabled"
         const val KEY_DAY_START = "day_start_minute"
         const val KEY_PARENTAL = "parental_mode"
+        const val KEY_PARTNER_PANEL = "partner_panel"
         const val KEY_NUDGE = "nudge_enabled"
         const val KEY_IMAGE_PROBE = "image_probe"
         const val KEY_IMAGE_SENSITIVITY = "image_sensitivity"

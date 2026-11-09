@@ -40,4 +40,4 @@ Programa por pasos, test de adicción, informe de impulsos para el compañero.
 
 ## Estado actual
 
-Versión **0.6.0** (ver `CHANGELOG.md`): las fases F1 a F6 están hechas en lo local y en el servidor; lo que queda por probar o decidir está en `PENDIENTES.md`.
+Versión **0.7.0** (ver `CHANGELOG.md`): las fases F1 a F6 están hechas en lo local y en el servidor; lo que queda por probar o decidir está en `PENDIENTES.md`.

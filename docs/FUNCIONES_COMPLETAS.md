@@ -133,6 +133,8 @@ YouTube Shorts · Reels de Instagram · Stories de Instagram · búsqueda de Ins
 | H12 | Desbloqueo de emergencia con fricción: introducción, por qué lo bloqueaste, qué ganas, cómo te sentirías, frase de compromiso escrita a mano, espera, éxito. Cupo configurable (por defecto 3 por semana, 5 minutos cada uno) y aviso al compañero | F3 |
 | H13 | Candado de un perfil, sin modo estricto: no se apaga, pausa, edita ni borra hasta cumplir los métodos de salida elegidos (espera, pedirlo y esperar, cargador, PIN, compañero) | F2 |
 | H14 | Desactivar el administrador (desinstalar) con compañero vinculado lo aprueba siempre el compañero por correo; la espera de Aprobaciones, si hay, va antes del envío | F4 |
+| H15 | Panel del compañero: elegir qué avisos manda el teléfono, en «Avisarle lo que pasa» y en el modo parental (apagar uno lo aprueba el compañero) | F5 |
+| H16 | Panel del compañero: elegir qué protecciones del modo estricto valen con compañero sin activar el modo estricto, por modo; incluye «los cambios de perfiles los aprueba él» | F5 |
 
 ## I. Aprobaciones y compañero
 

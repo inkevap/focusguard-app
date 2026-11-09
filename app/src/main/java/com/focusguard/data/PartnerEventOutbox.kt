@@ -57,6 +57,8 @@ class PartnerEventOutbox(
     private val now: () -> Instant,
     /** Pide un envío cuanto antes (WorkManager); los bloqueos esperan al envío periódico. */
     private val requestFlush: () -> Unit,
+    /** Qué avisos elige el usuario mandar (panel del compañero); el resto no sale del teléfono. */
+    private val allows: (PartnerEventType) -> Boolean = { true },
 ) {
     private val flushLock = Mutex()
     private val queueLock = Any()
@@ -76,7 +78,7 @@ class PartnerEventOutbox(
     val accepting: Boolean get() = noticesOn() && partner.isActive
 
     fun record(type: PartnerEventType, label: String? = null) {
-        if (!accepting) return
+        if (!accepting || !allows(type)) return
         synchronized(queueLock) { save(PartnerEvents.enqueue(current(), PartnerEvent(type, now(), label))) }
         if (PartnerEvents.urgent(type)) requestFlush()
     }

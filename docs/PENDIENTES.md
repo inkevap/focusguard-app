@@ -634,3 +634,8 @@ Recordatorio puesto en el calendario del usuario para el **martes 3 de noviembre
 - **Correos con diseño**: el HTML no llegaba por la cola de envío; corregido (migración 13). Falta ver cómo se pintan en Gmail, Outlook y Apple Mail reales y, sobre todo, en modo oscuro.
 - **Detección de imágenes**: los umbrales de los pasos 4 y 5 y los valores de serie salen de 13 capturas de Instagram (falsos avisos) puntuadas en el PC; la carpeta de 83 imágenes etiquetadas ya no existe, así que no se midió cuántas detecciones reales se pierden. Hay un círculo vicioso por decidir: cada falso bloqueo cuenta como incidente, sube el nivel del modo dinámico y con él la sensibilidad. Opciones: que solo cuenten los bloqueos muy claros, o que el modo dinámico no suba la sensibilidad.
 - El servidor del VPS y la rama `claude/deteccion-de-imagenes` no se habían fusionado con `main` hasta este release.
+
+### Versión 0.7.0 (2026-11-09)
+
+- Hecho con pruebas unitarias: varios bloques el mismo día, panel del compañero (avisos y protecciones, por modo). **Sin probar en el teléfono**: no estaba conectado al terminar.
+- Sin hacer: que el panel decida también los avisos que genera el servidor; que la aprobación de un cambio del panel se aplique por partes (hoy se aplica el panel entero); avisar al compañero de que cambió el panel.

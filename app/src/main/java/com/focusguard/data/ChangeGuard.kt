@@ -5,6 +5,7 @@ import com.focusguard.decision.ChangeRule
 import com.focusguard.decision.ProfileLocks
 import com.focusguard.model.ApprovalMode
 import com.focusguard.model.ApprovalRequest
+import com.focusguard.model.StrictProtection
 import java.time.Instant
 
 sealed interface GuardResult {
@@ -29,7 +30,11 @@ class ChangeGuard(
     /** Modo parental (I7) con un compañero activo: todo cambio pasa por él. */
     val parentalActive: Boolean get() = settings.parentalMode.value && partner.isActive
 
-    val approvalRequired: Boolean get() = gate.required || parentalActive
+    /** Con compañero, la protección «editar» del panel del compañero hace que los cambios pasen por él aunque el modo estricto esté apagado. */
+    private val partnerEditProtected: Boolean
+        get() = partner.isActive && StrictProtection.EDIT_LOCK in settings.partnerPanel.value.active(settings.parentalMode.value).protections
+
+    val approvalRequired: Boolean get() = gate.required || parentalActive || partnerEditProtected
 
     /** Enciende el modo parental: las solicitudes que esperaban por otra vía pasan al compañero, o seguirían aplicándose sin él. */
     fun enableParental() {
@@ -76,7 +81,7 @@ class ChangeGuard(
      */
     fun check(actionKey: String, actionId: Int, payload: String? = null, viaPartner: Boolean = false): GuardResult {
         ProfileLocks.targetOf(actionKey)?.takeIf(profileLocks::isLocked)?.let { return GuardResult.Blocked(PROFILE_LOCKED) }
-        val byPartner = viaPartner || parentalActive
+        val byPartner = viaPartner || parentalActive || partnerEditProtected
         return when (ChangeRule.decide(locked = isLocked(), approvalRequired = approvalRequired || viaPartner)) {
             ChangeOutcome.LOCKED -> GuardResult.Blocked(LOCKED)
             ChangeOutcome.NEEDS_APPROVAL -> {

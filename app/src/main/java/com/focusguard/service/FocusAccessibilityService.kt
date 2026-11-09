@@ -156,6 +156,7 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
     private val notificationLog: NotificationLog by inject()
     private val pauses: ProfilePauses by inject()
     private val partnerEvents: PartnerEventOutbox by inject()
+    private val partnerRepository: com.focusguard.data.PartnerRepository by inject()
     private val adultFilter: AdultFilterProvider by inject()
     private val streaks: StreakStore by inject()
     private val habits: HabitsStore by inject()
@@ -363,6 +364,8 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
         // Durante el pánico se cierran también los ajustes que apagan la app, como con la protección del modo estricto.
         val protections = buildSet {
             if (strictActive) addAll(config.protections)
+            // Las protecciones que se eligieron para el compañero valen siempre que haya uno, con o sin modo estricto.
+            if (partnerRepository.isActive) addAll(settings.partnerPanel.value.active(settings.parentalMode.value).protections)
             if (panicActive) add(StrictProtection.SETTINGS_GUARD)
         }
         val settingsGuarded = StrictProtection.SETTINGS_GUARD in protections

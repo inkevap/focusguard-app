@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.focusguard.data.AccountState
 import com.focusguard.data.PartnerState
+import com.focusguard.decision.PartnerPanel
 import com.focusguard.data.PartnerRepository
 import com.focusguard.server.HelpedInfo
 import com.focusguard.server.PartnerInfo
@@ -51,6 +52,7 @@ fun AccountScreen(viewModel: AccountViewModel, onBack: () -> Unit, onOpenBackup:
     val partner by viewModel.partnerState.collectAsStateWithLifecycle()
     val partners by viewModel.partners.collectAsStateWithLifecycle()
     val partnerNotices by viewModel.partnerNotices.collectAsStateWithLifecycle()
+    val panel by viewModel.panel.collectAsStateWithLifecycle()
     val parentalMode by viewModel.parentalMode.collectAsStateWithLifecycle()
     val helping by viewModel.helping.collectAsStateWithLifecycle()
     val snackbar = rememberMessageSnackbar(viewModel.message, viewModel::clearMessage)
@@ -70,6 +72,7 @@ fun AccountScreen(viewModel: AccountViewModel, onBack: () -> Unit, onOpenBackup:
             parentalMode = parentalMode,
             helping = helping,
             partners = partners,
+            panel = panel,
             busy = viewModel.busy,
             actions = AccountActions(
                 saveServerUrl = viewModel::saveServerUrl,
@@ -85,6 +88,7 @@ fun AccountScreen(viewModel: AccountViewModel, onBack: () -> Unit, onOpenBackup:
                 removePartnerById = { viewModel.removePartner(it) },
                 setPartnerNotices = viewModel::setPartnerNotices,
                 setParentalMode = viewModel::setParentalMode,
+                setPanel = viewModel::setPanel,
                 openBackup = onOpenBackup,
             ),
             modifier = Modifier.padding(padding),
@@ -107,10 +111,11 @@ class AccountActions(
     val setParentalMode: (Boolean) -> Unit,
     val openBackup: () -> Unit,
     val removePartnerById: (String) -> Unit = {},
+    val setPanel: (PartnerPanel) -> Unit = {},
 )
 
 @Composable
-internal fun AccountContent(serverUrl: String, account: AccountState, partner: PartnerState, partnerNotices: Boolean, parentalMode: Boolean, helping: List<HelpedInfo>, busy: Boolean, actions: AccountActions, modifier: Modifier = Modifier, partners: List<PartnerInfo> = emptyList()) {
+internal fun AccountContent(serverUrl: String, account: AccountState, partner: PartnerState, partnerNotices: Boolean, parentalMode: Boolean, helping: List<HelpedInfo>, busy: Boolean, actions: AccountActions, modifier: Modifier = Modifier, partners: List<PartnerInfo> = emptyList(), panel: PartnerPanel = PartnerPanel()) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
@@ -136,6 +141,7 @@ internal fun AccountContent(serverUrl: String, account: AccountState, partner: P
                 }
             }
             item { PartnerCard(partner, partnerNotices, parentalMode, verified = account.emailVerified == true, busy = busy, actions = actions, partners = partners) }
+            if (partner is PartnerState.Active) item { PartnerPanelCard(panel, parentalMode, actions.setPanel) }
             if (helping.isNotEmpty()) item { HelpingCard(helping, partner, busy, actions) }
         } else if (serverUrl.isNotBlank()) {
             item { SignInCard(busy, actions) }

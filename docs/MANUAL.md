@@ -91,6 +91,8 @@ Un nombre y un emoji para reconocerlo: «Estudio», «Noche tranquila».
 
 Uno o varios horarios por días de la semana, con selector de días (L M X J V S D, con atajos «Laborables», «Fines de semana», «Todos»), hora «Desde» y «Hasta» y una barra de 24 h que muestra el rango. Si «Hasta» es menor que «Desde», el horario **sigue al día siguiente** (por ejemplo, de 23:00 a 07:00). Sin horario, el perfil está activo siempre mientras esté encendido.
 
+**Varios bloques el mismo día.** Un perfil puede tener cuantos horarios quieras, también varios el mismo día (por ejemplo lunes de 9:00 a 12:00 y de 14:00 a 17:00): solo bloquea dentro de cada bloque y el hueco queda libre. La lista de horarios sale ordenada por día y hora.
+
 ### 3.5 Cuándo más: condiciones
 
 Además del horario, el perfil puede activarse solo:
@@ -319,6 +321,13 @@ En Ajustes: guarda perfiles y ajustes en un archivo. **No incluye** el modo estr
 La dirección de tu servidor FocusGuard. Cambiarla pide aprobación (de él salen las listas de bloqueo).
 
 ---
+
+**Qué se le avisa y qué se protege.** Con un compañero activo, la tarjeta del mismo nombre en Cuenta tiene dos pestañas, «Avisarle lo que pasa» y «Modo parental»; vale la del modo en uso. En cada una eliges:
+
+- **Qué se le avisa**: cada aviso que manda el teléfono (intentar abrir algo bloqueado, entrar en los ajustes que desactivan la protección, desinstalar, apagar una protección, pánico, desbloqueo de emergencia, cambiar el icono, total diario de DNS y resumen semanal de impulsos). Un aviso apagado no sale del teléfono.
+- **Qué se protege con tu compañero**: las mismas protecciones del modo estricto (ajustes que desactivan la app, apps recientes, pantalla dividida, menú de apagado, panel de notificaciones, compras, administrador de tareas, ahorro de batería), pero valen siempre que haya compañero, **sin activar el modo estricto**. «Los cambios de perfiles los aprueba él» manda editar, apagar o borrar perfiles y aflojar listas por su aprobación en vez de rechazarlos.
+
+Poner más avisos o más protecciones es libre; apagar un aviso o quitar una protección, en cualquiera de las dos pestañas, lo tiene que aprobar el compañero. De serie se manda todo y no hay protecciones extra. Esto es independiente de lo que el propio compañero elija recibir en su página de preferencias (le llega lo que el teléfono manda y él deja encendido).
 
 ## 9. Bienestar y recuperación
 

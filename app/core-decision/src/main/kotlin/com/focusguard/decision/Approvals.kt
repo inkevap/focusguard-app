@@ -53,6 +53,9 @@ object Approvals {
     /** Quitar el candado de un perfil con el compañero como método de salida. */
     const val ACTION_PROFILE_UNLOCK = 2034
 
+    /** Quitar un aviso o una protección del panel del compañero. */
+    const val ACTION_PARTNER_PANEL = 2035
+
     /** Textos largos de literatura clásica en español (dominio público), para teclear a mano. */
     val PHRASES = listOf(
         "En un lugar de la Mancha, de cuyo nombre no quiero acordarme, no ha mucho tiempo que vivía un hidalgo de los de lanza en astillero, adarga antigua, rocín flaco y galgo corredor.",
@@ -123,6 +126,7 @@ object Approvals {
         actionKey.startsWith("streak_restore:") -> "Restaurar un día perdido de tu racha"
         actionKey == "server_change" -> "Cambiar el servidor de FocusGuard (de él salen las listas de bloqueo)"
         actionKey == "adult_word_remove" -> "Quitar una palabra o web de tu lista de contenido adulto"
+        actionKey == "partner_panel" -> "Mandarle menos avisos o quitar protecciones que valían con compañero (lo que cambie dejaría de vigilarse)"
         actionKey == "partner_notices_off" -> "Dejar de enviarte avisos de lo que pasa en el teléfono"
         actionKey.startsWith("profile_unlock:") -> "Quitar el candado de un perfil (dejaría de estar protegido)"
         actionKey == "admin_off" -> "Poder desactivar el administrador del dispositivo o la accesibilidad (con ellos desactivados se podría desinstalar FocusGuard)"

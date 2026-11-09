@@ -16,6 +16,7 @@ import com.focusguard.data.PartnerApprovals
 import com.focusguard.data.PartnerRepository
 import com.focusguard.data.PartnerState
 import com.focusguard.decision.Approvals
+import com.focusguard.decision.PartnerPanel
 import com.focusguard.ui.askPartner
 import com.focusguard.server.HelpedInfo
 import com.focusguard.server.PartnerInfo
@@ -42,6 +43,7 @@ class AccountViewModel(
     val partnerState: StateFlow<PartnerState> = partner.state
     val partners: StateFlow<List<PartnerInfo>> = partner.partners
     val partnerNotices: StateFlow<Boolean> = settings.partnerNotices
+    val panel: StateFlow<PartnerPanel> = settings.partnerPanel
     val helping: StateFlow<List<HelpedInfo>> = helpingRepository.helping
 
     var busy by mutableStateOf(false)
@@ -142,6 +144,22 @@ class AccountViewModel(
     /** Encender los avisos es libre; apagarlos con un compañero activo lo tiene que aprobar él. */
     fun setPartnerNotices(enabled: Boolean) {
         if (enabled || !partner.isActive) settings.setPartnerNotices(enabled) else askPartner(ApprovalExecutor.KEY_PARTNER_NOTICES_OFF, Approvals.ACTION_PARTNER_NOTICES_OFF)
+    }
+
+    /**
+     * Cambia el panel del compañero. Poner más avisos o más protecciones es libre; quitar alguno, con un compañero activo, se lo pide a él
+     * (lo que se pide se aplica entero cuando lo apruebe).
+     */
+    fun setPanel(next: PartnerPanel) {
+        val current = settings.partnerPanel.value
+        if (next == current) return
+        if (!current.weakens(next) || !partner.isActive) {
+            settings.setPartnerPanel(next)
+            return
+        }
+        val result = guard.check(ApprovalExecutor.KEY_PARTNER_PANEL, Approvals.ACTION_PARTNER_PANEL, next.encode(), viaPartner = true)
+        (result as? com.focusguard.data.GuardResult.Blocked)?.let { message = it.message }
+        viewModelScope.launch { partnerApprovals.sync() }
     }
 
     /** Con un compañero activo nunca se permite sin pedírselo (`viaPartner`); la solicitud sale ya hacia el servidor para que reciba el correo. */

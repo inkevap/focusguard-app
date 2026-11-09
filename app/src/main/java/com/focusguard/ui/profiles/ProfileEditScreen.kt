@@ -285,7 +285,7 @@ internal fun IntervalsEditor(
     val startMinute = remember(start) { parseMinutes(start)?.takeIf { it < 24 * 60 } }
     val endMinute = remember(end) { parseMinutes(end) }
 
-    intervals.forEach { interval ->
+    intervals.sortedWith(compareBy({ it.day.value }, { it.startMinute })).forEach { interval ->
         RemovableRow(
             text = "${Days.word(interval.day).replaceFirstChar { it.uppercase() }} · ${formatMinutes(interval.startMinute)}–${formatMinutes(interval.endMinute)}",
             removeDescription = "Quitar horario del ${Days.word(interval.day)}",
@@ -294,6 +294,7 @@ internal fun IntervalsEditor(
     }
 
     Text("Añadir un horario", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 12.dp))
+    Hint("Puedes añadir varios bloques el mismo día, por ejemplo de 9:00 a 12:00 y de 14:00 a 17:00: el perfil solo bloquea dentro de cada uno.")
     DayChips(days) { days = it }
     TimeRangeFields(start, end, { start = it }, { end = it }, startMinute != null, endMinute != null)
     Hint("Toca «Desde» y «Hasta» para elegir la hora. Si «hasta» es menor que «desde», el horario sigue al día siguiente (por ejemplo de 23:00 a 07:00).")

@@ -18,7 +18,7 @@ class DescribeActionsTest {
             ApprovalExecutor.KEY_ADULT_OFF, ApprovalExecutor.KEY_APPROVAL_MODE, ApprovalExecutor.KEY_DAY_START, ApprovalExecutor.KEY_NEW_APPS,
             ApprovalExecutor.KEY_EMBEDDED, ApprovalExecutor.KEY_IMAGE_SENSITIVITY, ApprovalExecutor.KEY_IMAGE_PROBE_OFF, ApprovalExecutor.KEY_IMAGE_VIGILANCE, ApprovalExecutor.KEY_IMAGE_ADAPTIVE, ApprovalExecutor.KEY_ADULT_TEXT_EXEMPT, ApprovalExecutor.KEY_FOLD_FLOATING, ApprovalExecutor.KEY_SIGN_OUT, ApprovalExecutor.KEY_PARTNER_NOTICES_OFF, ApprovalExecutor.KEY_ADULT_WORD_REMOVE, ApprovalExecutor.KEY_ADULT_ALLOW, ApprovalExecutor.KEY_SERVER_CHANGE, ApprovalExecutor.KEY_DNS_OFF, ApprovalExecutor.KEY_DNS_EXCLUDE,
             ApprovalExecutor.KEY_LAUNCHER_ICON, ApprovalExecutor.KEY_PARENTAL_OFF, ApprovalExecutor.KEY_URGE_SHARING_OFF, ApprovalExecutor.streakRestore(java.time.LocalDate.of(2026, 10, 27)), ApprovalExecutor.profileOff(1), ApprovalExecutor.profilePause(1), ApprovalExecutor.profileDelete(1),
-            ApprovalExecutor.profileEdit(1), ApprovalExecutor.sessionEnd(1),
+            ApprovalExecutor.profileEdit(1), ApprovalExecutor.sessionEnd(1), ApprovalExecutor.KEY_PARTNER_PANEL,
             ApprovalExecutor.strictExit(StrictAction.Disable), ApprovalExecutor.strictExit(StrictAction.Pause(15)),
         )
         keys.forEach { assertNotEquals(generic, Approvals.describe(it), it) }

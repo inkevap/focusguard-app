@@ -1,5 +1,10 @@
 # Cambios
 
+## 0.7.0 (2026-11-09)
+
+- Varios bloques horarios el mismo día en un perfil (ya se admitían; ahora el editor los ordena y lo explica).
+- Panel del compañero (Cuenta): qué avisos manda el teléfono y qué protecciones valen con compañero sin activar el modo estricto, por separado para «Avisarle lo que pasa» y para el modo parental. Quitar algo lo aprueba el compañero.
+
 ## 0.6.0 (2026-11-08)
 
 **App**

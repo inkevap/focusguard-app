@@ -69,4 +69,21 @@ class ScheduleEvaluatorTest {
         assertFalse(active(p, at(1, 12), Instant.parse("2026-01-01T00:09:59Z")))
         assertTrue(active(p, at(1, 12), Instant.parse("2026-01-01T00:10:00Z")))
     }
+
+    @Test
+    fun variosBloquesEnElMismoDiaSeBloqueanSoloEnSusHoras() {
+        // Lunes de 9:00 a 12:00 y de 14:00 a 17:00: el hueco del mediodía queda libre.
+        val profile = Profile(
+            1, "p",
+            intervals = listOf(
+                ScheduleInterval(DayOfWeek.MONDAY, 9 * 60, 12 * 60),
+                ScheduleInterval(DayOfWeek.MONDAY, 14 * 60, 17 * 60),
+            ),
+        )
+        assertTrue(active(profile, at(1, 10)))
+        assertFalse(active(profile, at(1, 13)))
+        assertTrue(active(profile, at(1, 15)))
+        assertFalse(active(profile, at(1, 18)))
+        assertFalse(active(profile, at(2, 10)))
+    }
 }

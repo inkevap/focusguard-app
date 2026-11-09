@@ -11,6 +11,7 @@ Bloqueador personal de apps, webs, contenido adulto e imágenes para Android, co
 - **Detección de imágenes en el teléfono**: captura la pantalla y dos modelos (GantMan y NudeNet) puntúan lo explícito y lo sugerente. Lo explícito se bloquea; lo sugerente avisa. Ritmo adaptativo, vigilancia tras un incidente y modo dinámico. Nada sale del teléfono.
 - **Límites de uso** compartidos por todo el perfil o **por cada app**, con una notificación que dice cuánto llevas y cuánto te queda.
 - **Modo estricto, PIN y administrador del dispositivo** para que no se pueda apagar, editar ni desinstalar sin permiso, y **candado por perfil** (sin modo estricto) con sus métodos de salida. Desinstalar con compañero vinculado lo aprueba él por correo.
+- **Panel del compañero**: eliges qué avisos le manda el teléfono y qué protecciones valen con él (sin modo estricto), por separado para «Avisarle lo que pasa» y para el modo parental.
 - **Hasta tres compañeros de responsabilidad**: cada solicitud de aprobación les llega por correo (con diseño y un solo botón que abre la página de aprobar o rechazar) y basta con que uno la apruebe. Avisos configurables, informe diario y modo parental.
 - **Recuperación**: rachas, modo impulsos, diario, programa por pasos y test.
 - **Botón de pánico, Dormir, Quick Block y Pomodoro**, widgets y atajos del icono.

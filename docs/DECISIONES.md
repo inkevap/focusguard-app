@@ -236,3 +236,10 @@ Registro de decisiones del proyecto. Añade una entrada por cada una: fecha, dec
 - **Qué pasaba:** el servidor ya tenía correos HTML con el estilo de la app (`theme.ts`), pero la cola de envío (`mail_outbox`) solo guardaba y mandaba el texto, así que todos los correos salían como texto plano.
 - **Cambios:** la cola guarda y manda también el HTML (migración 13, columna `html`; las filas que ya estaban en cola salen como texto). El correo de solicitud lleva **un solo botón**, «Revisar la solicitud», que abre `GET /r/{token}`, una página con el cambio y los botones de aprobar y rechazar. Así un toque en el correo nunca decide nada. Las rutas `/r/{token}/approve` y `/r/{token}/reject` siguen existiendo para correos ya enviados.
 - **Despliegue:** el cambio solo se nota tras actualizar el servidor (`git pull && docker compose up -d --build`); la migración 13 se aplica sola al arrancar.
+
+## Varios bloques al día y panel del compañero (2026-11-09)
+
+- **Bloques**: el modelo y el evaluador ya admitían varios intervalos el mismo día; solo faltaba que se notara. El editor los ordena por día y hora y lo explica. Prueba unitaria con dos bloques del mismo día.
+- **Avisos elegidos por el usuario**: se filtran **en el teléfono** (lo que no se manda no sale), no en el servidor, así encaja con la regla de privacidad. Las preferencias que el compañero elige en su página siguen valiendo encima. Los dos avisos que genera el servidor (informe diario y «dejó de dar señales») no se pueden apagar desde el teléfono.
+- **Protecciones con compañero sin modo estricto**: reutilizan las del modo estricto en lugar de inventar otra lista. Se unen a las del modo estricto en el servicio de accesibilidad. Con «editar perfiles», el cambio no se rechaza sino que pasa por el compañero, porque no hay un «bloqueo activo» que lo justifique.
+- **Riesgo**: poner «cerrar los ajustes que desactivan la app» sin modo estricto cierra siempre esas pantallas; para arreglar un permiso hay que quitarlo (con aprobación) o usar «Pedir permiso para desactivarlo».

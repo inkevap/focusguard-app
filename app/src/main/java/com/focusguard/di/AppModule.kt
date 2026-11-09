@@ -241,7 +241,7 @@ val appModule = module {
     single { AdultFilterProvider(get(), get()) }
     single {
         val context = androidContext()
-        PartnerEventOutbox(get(), get(), get(), get(), { get<SettingsRepository>().partnerNotices.value }, get<TrustedClock>()::now, { PartnerSync.flushSoon(context) })
+        PartnerEventOutbox(get(), get(), get(), get(), { get<SettingsRepository>().partnerNotices.value }, get<TrustedClock>()::now, { PartnerSync.flushSoon(context) }, { type -> get<SettingsRepository>().let { it.partnerPanel.value.active(it.parentalMode.value).allows(type) } })
     }
     single { CategoryCatalog.fromAssets(androidContext()) }
     single { TemplateCatalog.fromAssets(androidContext()) }

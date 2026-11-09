@@ -164,3 +164,9 @@ Room con: perfiles, apps por perfil, webs por perfil, Wi-Fi por perfil, interval
 - **Candado de perfil**: reutiliza `StrictMode.evaluateExit` con los métodos `Timer`, `Cooldown`, `Charger`, `Pin` y `Partner` (no `FollowSchedule`); hay que cumplirlos todos. Bloquea apagar, pausar, editar y borrar solo ese perfil. Si el método `Partner` está puesto y el compañero ya no existe, a las 72 h se puede quitar con espera.
 - **Desinstalación**: con compañero activo, `requestUninstall` crea siempre una solicitud al compañero (`ApprovalMode.PARTNER`); con modo estricto activo no se puede. La espera de 24 h o 72 h de Aprobaciones, si está elegida, retrasa el envío del correo (`sendAfter`) en vez de sustituirlo.
 - **Imágenes**: sensibilidad de serie 2; un bloqueo cuenta 6 h en el modo dinámico (nivel máximo 2 de serie); umbrales de los pasos 4 y 5 con los dos modelos: explícito 0,20 y 0,18, sugerente 0,28 y 0,24 (ver `DECISIONES.md`).
+
+## 13. Varios bloques al día y panel del compañero (0.7.0)
+
+- **Horarios**: un perfil guarda una lista de intervalos semanales; puede haber varios el mismo día y el perfil está activo si la hora cae en cualquiera. El editor los ordena por día y hora.
+- **Panel del compañero** (`PartnerPanel`): para cada forma de tener compañero (`watch` y `parental`) guarda `noticesOff` (tipos de aviso que el teléfono no manda) y `protections` (protecciones del modo estricto que valen con compañero activo). Vale la del modo en uso. `PartnerEventOutbox.record` descarta los avisos apagados; el servicio de accesibilidad une esas protecciones a las del modo estricto; con `EDIT_LOCK`, `ChangeGuard.check` manda los cambios por el compañero (`ApprovalMode.PARTNER`) en vez de rechazarlos.
+- **Debilitar**: apagar un aviso o quitar una protección (en cualquiera de las dos) pide la aprobación del compañero (`partner_panel`, con el panel entero como carga); añadir es libre.
