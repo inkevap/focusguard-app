@@ -737,12 +737,16 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
 
     private var reporting = false
 
+    /** Los bloqueos que el usuario eligió no avisar (por clase de cosa o por perfil) no salen del teléfono. */
+    private fun partnerAllowsBlock(decision: BlockDecision.Block) =
+        settings.partnerPanel.value.active(settings.parentalMode.value).allowsBlock(decision.reason, decision.profileId)
+
     private fun record(decision: BlockDecision.Block) {
         val event = BlockEvent(clock.now(), decision.profileId, decision.reason, decision.target)
         val partnerEvent = PartnerEvents.classify(decision.reason, decision.target)
         CoroutineScope(Dispatchers.IO).launch {
             blockLog.record(event)
-            partnerEvent?.let { partnerEvents.record(it, decision.target) }
+            partnerEvent?.takeIf { it != PartnerEventType.BLOCKED || partnerAllowsBlock(decision) }?.let { partnerEvents.record(it, decision.target) }
         }
     }
 

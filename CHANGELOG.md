@@ -1,5 +1,9 @@
 # Cambios
 
+## 0.7.1 (2026-11-09)
+
+- Panel del compañero: avisos de lo bloqueado por clase de cosa y por perfil, y una casilla por cada función de la app (perfiles, filtros, imágenes, ajustes sensibles…) cuyo cambio aprueba siempre el compañero, sin modo estricto.
+
 ## 0.7.0 (2026-11-09)
 
 - Varios bloques horarios el mismo día en un perfil (ya se admitían; ahora el editor los ordena y lo explica).

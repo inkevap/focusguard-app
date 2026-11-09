@@ -243,3 +243,8 @@ Registro de decisiones del proyecto. Añade una entrada por cada una: fecha, dec
 - **Avisos elegidos por el usuario**: se filtran **en el teléfono** (lo que no se manda no sale), no en el servidor, así encaja con la regla de privacidad. Las preferencias que el compañero elige en su página siguen valiendo encima. Los dos avisos que genera el servidor (informe diario y «dejó de dar señales») no se pueden apagar desde el teléfono.
 - **Protecciones con compañero sin modo estricto**: reutilizan las del modo estricto en lugar de inventar otra lista. Se unen a las del modo estricto en el servicio de accesibilidad. Con «editar perfiles», el cambio no se rechaza sino que pasa por el compañero, porque no hay un «bloqueo activo» que lo justifique.
 - **Riesgo**: poner «cerrar los ajustes que desactivan la app» sin modo estricto cierra siempre esas pantallas; para arreglar un permiso hay que quitarlo (con aprobación) o usar «Pedir permiso para desactivarlo».
+
+## Panel del compañero ampliado (2026-11-09)
+
+- **Avisos por cosa bloqueada**: se elige por clase (`BlockReason`) y por perfil, no por cada app o web (serían demasiadas y dirían qué hay instalado). El aviso general de bloqueos sigue mandando; las clases y perfiles apagados se descartan en el teléfono.
+- **Áreas**: una por función con ajustes sensibles, agrupando las claves de las solicitudes. Lo que no está en ninguna (modo estricto, desinstalar) ya lo decide su propio flujo: el modo estricto manda sobre todo y desinstalar siempre pasa por el compañero.

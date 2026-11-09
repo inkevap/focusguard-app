@@ -2,6 +2,7 @@ package com.focusguard.data
 
 import com.focusguard.decision.ChangeOutcome
 import com.focusguard.decision.ChangeRule
+import com.focusguard.decision.PartnerArea
 import com.focusguard.decision.ProfileLocks
 import com.focusguard.model.ApprovalMode
 import com.focusguard.model.ApprovalRequest
@@ -33,6 +34,13 @@ class ChangeGuard(
     /** Con compañero, la protección «editar» del panel del compañero hace que los cambios pasen por él aunque el modo estricto esté apagado. */
     private val partnerEditProtected: Boolean
         get() = partner.isActive && StrictProtection.EDIT_LOCK in settings.partnerPanel.value.active(settings.parentalMode.value).protections
+
+    /** ¿El panel del compañero pide que el cambio de esta función pase por él? */
+    private fun areaProtected(actionKey: String): Boolean {
+        if (!partner.isActive) return false
+        val area = PartnerArea.of(actionKey) ?: return false
+        return area in settings.partnerPanel.value.active(settings.parentalMode.value).areas
+    }
 
     val approvalRequired: Boolean get() = gate.required || parentalActive || partnerEditProtected
 
@@ -81,8 +89,8 @@ class ChangeGuard(
      */
     fun check(actionKey: String, actionId: Int, payload: String? = null, viaPartner: Boolean = false): GuardResult {
         ProfileLocks.targetOf(actionKey)?.takeIf(profileLocks::isLocked)?.let { return GuardResult.Blocked(PROFILE_LOCKED) }
-        val byPartner = viaPartner || parentalActive || partnerEditProtected
-        return when (ChangeRule.decide(locked = isLocked(), approvalRequired = approvalRequired || viaPartner)) {
+        val byPartner = viaPartner || parentalActive || partnerEditProtected || areaProtected(actionKey)
+        return when (ChangeRule.decide(locked = isLocked(), approvalRequired = approvalRequired || viaPartner || areaProtected(actionKey))) {
             ChangeOutcome.LOCKED -> GuardResult.Blocked(LOCKED)
             ChangeOutcome.NEEDS_APPROVAL -> {
                 gate.request(actionKey, actionId, payload, mode = if (byPartner) ApprovalMode.PARTNER else null)

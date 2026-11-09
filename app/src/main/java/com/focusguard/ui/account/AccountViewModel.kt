@@ -26,7 +26,10 @@ import com.focusguard.server.ApiResult
 import com.focusguard.server.ServerUrl
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class AccountViewModel(
@@ -36,6 +39,7 @@ class AccountViewModel(
     private val partnerApprovals: PartnerApprovals,
     private val guard: ChangeGuard,
     private val helpingRepository: HelpingRepository,
+    profileRepository: com.focusguard.data.ProfileRepository,
 ) : ViewModel() {
 
     val serverUrl: StateFlow<String> = settings.serverUrl
@@ -44,6 +48,11 @@ class AccountViewModel(
     val partners: StateFlow<List<PartnerInfo>> = partner.partners
     val partnerNotices: StateFlow<Boolean> = settings.partnerNotices
     val panel: StateFlow<PartnerPanel> = settings.partnerPanel
+
+    /** Los perfiles, para elegir de cuáles se avisa cuando bloquean algo. */
+    val profileNames: StateFlow<List<Pair<Long, String>>> = profileRepository.profiles
+        .map { list -> list.map { it.id to it.title } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val helping: StateFlow<List<HelpedInfo>> = helpingRepository.helping
 
     var busy by mutableStateOf(false)

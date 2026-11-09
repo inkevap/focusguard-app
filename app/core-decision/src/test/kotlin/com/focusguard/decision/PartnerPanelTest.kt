@@ -54,4 +54,48 @@ class PartnerPanelTest {
         assertNull(PartnerPanel.decode("NOEXISTE;|;"))
         assertNull(PartnerPanel.decode(";EDIT_LOCK|;NOEXISTE"))
     }
+
+    @Test fun cadaSolicitudConocidaTieneSuAreaYLasDemasNinguna() {
+        assertEquals(PartnerArea.PROFILES_EDIT, PartnerArea.of("profile_off:3"))
+        assertEquals(PartnerArea.PROFILES_PAUSE, PartnerArea.of("session_end:1"))
+        assertEquals(PartnerArea.ADULT_FILTER, PartnerArea.of("adult_text_exempt"))
+        assertEquals(PartnerArea.IMAGES, PartnerArea.of("image_sensitivity"))
+        assertEquals(PartnerArea.STREAK, PartnerArea.of("streak_restore:20000"))
+        assertEquals(PartnerArea.PARTNER_SETTINGS, PartnerArea.of("partner_panel"))
+        assertNull(PartnerArea.of("strict_exit:disable"))
+        assertNull(PartnerArea.of("clave_que_no_existe"))
+    }
+
+    @Test fun todasLasAccionesDeLaAppEstanEnAlgunAreaSalvoLasDelModoEstrictoYElAdministrador() {
+        val keys = listOf(
+            "adult_off", "adult_word_remove", "adult_allow", "dns_off", "dns_exclude", "adult_text_exempt", "server_change", "approval_mode", "day_start",
+            "new_apps", "embedded_browsers", "image_sensitivity", "image_probe_off", "image_vigilance", "image_adaptive", "fold_floating", "sign_out",
+            "launcher_icon", "parental_off", "urge_sharing_off", "partner_notices_off", "partner_panel", "profile_edit:1", "profile_off:1", "profile_delete:1",
+            "profile_pause:1", "session_end:1", "streak_restore:1",
+        )
+        keys.forEach { assertTrue(PartnerArea.of(it) != null, it) }
+        assertEquals(PartnerArea.entries.toSet(), keys.mapNotNull(PartnerArea::of).toSet())
+    }
+
+    @Test fun losBloqueosSeAvisanPorClaseYPorPerfil() {
+        val c = PartnerChoices(
+            blockedReasonsOff = setOf(com.focusguard.model.BlockReason.LIMIT_REACHED),
+            blockedProfilesOff = setOf(7L),
+        )
+        assertTrue(c.allowsBlock(com.focusguard.model.BlockReason.PROFILE_APP, 1))
+        assertFalse(c.allowsBlock(com.focusguard.model.BlockReason.LIMIT_REACHED, 1))
+        assertFalse(c.allowsBlock(com.focusguard.model.BlockReason.PROFILE_APP, 7))
+        // Con el aviso general de bloqueos apagado no se avisa de ninguno.
+        assertFalse(PartnerChoices(noticesOff = setOf(PartnerEventType.BLOCKED)).allowsBlock(com.focusguard.model.BlockReason.PROFILE_APP, 1))
+    }
+
+    @Test fun quitarUnAreaOApagarUnaClaseDeBloqueoDebilitaYElFormatoViejoSeSigueLeyendo() {
+        val base = PartnerPanel(watch = PartnerChoices(areas = setOf(PartnerArea.DNS_FILTER)))
+        assertTrue(base.weakens(base.copy(watch = PartnerChoices())))
+        assertTrue(base.weakens(base.copy(watch = base.watch.copy(blockedProfilesOff = setOf(2L)))))
+        assertFalse(base.weakens(base.copy(watch = base.watch.copy(areas = base.watch.areas + PartnerArea.IMAGES))))
+        val full = PartnerPanel(watch = PartnerChoices(setOf(PartnerEventType.PANIC), setOf(StrictProtection.RECENTS), setOf(PartnerArea.IMAGES), setOf(com.focusguard.model.BlockReason.SUB_APP), setOf(4L, 9L)))
+        assertEquals(full, PartnerPanel.decode(full.encode()))
+        assertEquals(PartnerPanel(watch = PartnerChoices(setOf(PartnerEventType.BLOCKED), setOf(StrictProtection.EDIT_LOCK))), PartnerPanel.decode("BLOCKED;EDIT_LOCK|;"))
+    }
 }

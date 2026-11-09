@@ -274,7 +274,7 @@ val appModule = module {
     viewModel { OnboardingViewModel(get(), get(), get(), { installedPackages(androidContext()) }) }
     viewModel { SavedNotificationsViewModel(get(), androidContext()) }
     viewModel { StatsViewModel(get(), androidContext(), get(), get(), get(), get(), get()) }
-    viewModel { AccountViewModel(get(), get(), get(), get(), get(), get()) }
+    viewModel { AccountViewModel(get(), get(), get(), get(), get(), get(), get()) }
     viewModel { SettingsViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { ProtectionViewModel(get(), get(), get(), get(), get()) }
 }

@@ -53,6 +53,7 @@ fun AccountScreen(viewModel: AccountViewModel, onBack: () -> Unit, onOpenBackup:
     val partners by viewModel.partners.collectAsStateWithLifecycle()
     val partnerNotices by viewModel.partnerNotices.collectAsStateWithLifecycle()
     val panel by viewModel.panel.collectAsStateWithLifecycle()
+    val profileNames by viewModel.profileNames.collectAsStateWithLifecycle()
     val parentalMode by viewModel.parentalMode.collectAsStateWithLifecycle()
     val helping by viewModel.helping.collectAsStateWithLifecycle()
     val snackbar = rememberMessageSnackbar(viewModel.message, viewModel::clearMessage)
@@ -73,6 +74,7 @@ fun AccountScreen(viewModel: AccountViewModel, onBack: () -> Unit, onOpenBackup:
             helping = helping,
             partners = partners,
             panel = panel,
+            profileNames = profileNames,
             busy = viewModel.busy,
             actions = AccountActions(
                 saveServerUrl = viewModel::saveServerUrl,
@@ -115,7 +117,7 @@ class AccountActions(
 )
 
 @Composable
-internal fun AccountContent(serverUrl: String, account: AccountState, partner: PartnerState, partnerNotices: Boolean, parentalMode: Boolean, helping: List<HelpedInfo>, busy: Boolean, actions: AccountActions, modifier: Modifier = Modifier, partners: List<PartnerInfo> = emptyList(), panel: PartnerPanel = PartnerPanel()) {
+internal fun AccountContent(serverUrl: String, account: AccountState, partner: PartnerState, partnerNotices: Boolean, parentalMode: Boolean, helping: List<HelpedInfo>, busy: Boolean, actions: AccountActions, modifier: Modifier = Modifier, partners: List<PartnerInfo> = emptyList(), panel: PartnerPanel = PartnerPanel(), profileNames: List<Pair<Long, String>> = emptyList()) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
@@ -141,7 +143,7 @@ internal fun AccountContent(serverUrl: String, account: AccountState, partner: P
                 }
             }
             item { PartnerCard(partner, partnerNotices, parentalMode, verified = account.emailVerified == true, busy = busy, actions = actions, partners = partners) }
-            if (partner is PartnerState.Active) item { PartnerPanelCard(panel, parentalMode, actions.setPanel) }
+            if (partner is PartnerState.Active) item { PartnerPanelCard(panel, parentalMode, profileNames, actions.setPanel) }
             if (helping.isNotEmpty()) item { HelpingCard(helping, partner, busy, actions) }
         } else if (serverUrl.isNotBlank()) {
             item { SignInCard(busy, actions) }
