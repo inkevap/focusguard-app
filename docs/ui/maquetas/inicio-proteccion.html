@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es"><meta charset="utf-8">
+<style>
+:root{--primary:#2A55D6;--on-primary:#fff;--container:#DCE4FF;--on-container:#0B1F5C;--bg:#F6F7FC;--surface:#fff;--text:#1B1B21;--muted:#5B5E6B;--outline:#D6D8E3;--ok:#1E7B4B;--warn-bg:#FFF1D6;--warn:#7A4B00}
+*{box-sizing:border-box;margin:0}
+body{background:#E4E6F0;font-family:Roboto,"Segoe UI",system-ui,sans-serif;color:var(--text);display:flex;gap:40px;padding:40px;justify-content:center}
+.phone{width:360px;height:740px;background:var(--bg);border-radius:32px;border:10px solid #14151c;position:relative;overflow:hidden;display:flex;flex-direction:column}
+.status{height:24px;font-size:12px;display:flex;justify-content:space-between;padding:6px 18px 0;color:var(--text)}
+h1{font-size:28px;font-weight:600;padding:12px 20px 4px}
+.sub{font-size:14px;color:var(--muted);padding:0 20px 12px}
+.scroll{flex:1;overflow:hidden;padding:0 16px 8px;display:flex;flex-direction:column;gap:12px}
+.card{background:var(--surface);border-radius:20px;padding:16px;border:1px solid var(--outline)}
+.hero{background:var(--primary);color:var(--on-primary);border:none;display:flex;align-items:center;gap:14px}
+.hero .big{font-size:20px;font-weight:600}.hero .small{font-size:14px;opacity:.92}
+.dot{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.2);display:grid;place-items:center;font-size:22px}
+.quick{display:flex;gap:12px}
+.quick .card{flex:1;background:var(--container);border:none;color:var(--on-container);min-height:76px}
+.quick b{display:block;font-size:16px}.quick span{font-size:13px}
+.row{display:flex;align-items:center;gap:12px}
+.grow{flex:1}
+.title{font-size:16px;font-weight:600}.line{font-size:13px;color:var(--muted);margin-top:2px}
+.pill{display:inline-block;font-size:12px;background:var(--container);color:var(--on-container);padding:3px 10px;border-radius:99px;margin-top:8px}
+.sw{width:64px;height:38px;border-radius:19px;background:var(--primary);position:relative;flex:none}
+.sw::after{content:"";position:absolute;right:4px;top:4px;width:30px;height:30px;border-radius:50%;background:#fff}
+.sw.off{background:#C9CBD8}.sw.off::after{right:auto;left:4px}
+.section{font-size:13px;font-weight:600;color:var(--muted);padding:6px 4px 0;letter-spacing:.02em}
+.fab{position:absolute;right:16px;bottom:88px;background:var(--primary);color:#fff;border-radius:18px;height:56px;padding:0 20px;display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px;box-shadow:0 4px 14px rgba(42,85,214,.35)}
+nav{height:72px;background:var(--surface);border-top:1px solid var(--outline);display:flex;justify-content:space-around;align-items:center}
+nav div{display:flex;flex-direction:column;align-items:center;font-size:12px;gap:4px;color:var(--muted);min-width:64px}
+nav .ic{width:56px;height:30px;border-radius:15px;display:grid;place-items:center;font-size:18px}
+nav .on{color:var(--on-container);font-weight:600}nav .on .ic{background:var(--container)}
+.warn{background:var(--warn-bg);color:var(--warn);border:none;font-size:14px}
+.btn{display:inline-block;background:var(--primary);color:#fff;border-radius:99px;padding:10px 18px;font-size:14px;font-weight:600;margin-top:10px}
+.btn.o{background:none;color:var(--primary);border:1px solid var(--outline)}
+.cap{position:absolute;top:-30px;left:0;font-size:13px;color:#555}
+.wrap{position:relative}
+</style>
+<body>
+<div class="wrap"><div class="cap">Inicio</div>
+<div class="phone">
+ <div class="status"><span>9:41</span><span>●●●</span></div>
+ <h1>Inicio</h1><div class="sub">Lo que tienes bloqueado ahora mismo</div>
+ <div class="scroll">
+  <div class="card hero"><div class="dot">🛡</div><div><div class="big">Protección activa</div><div class="small">2 perfiles bloqueando · hasta las 17:00</div></div></div>
+  <div class="quick">
+   <div class="card"><b>Bloquear ya</b><span>Elige qué y cuánto tiempo</span></div>
+   <div class="card"><b>Enfoque</b><span>25 min de foco, 5 de descanso</span></div>
+  </div>
+  <div class="section">TUS PERFILES</div>
+  <div class="card"><div class="row"><div class="grow"><div class="title">📚 Estudio</div><div class="line">Bloquea 4 apps y 2 webs</div><div class="line">Lun a vie · 9:00–17:00</div></div><div class="sw"></div></div></div>
+  <div class="card"><div class="row"><div class="grow"><div class="title">🌙 Noche tranquila</div><div class="line">Bloquea 6 apps</div><div class="line">Todos los días · 23:00–7:00</div></div><div class="sw off"></div></div></div>
+  <div class="card"><div class="row"><div class="grow"><div class="title">🎮 Juegos</div><div class="line">Límite: 1 h al día</div><div class="line">Usado hoy: 25 min</div></div><div class="sw"></div></div></div>
+ </div>
+ <div class="fab">＋ Nuevo perfil</div>
+ <nav><div class="on"><span class="ic">⌂</span>Inicio</div><div><span class="ic">▤</span>Estadísticas</div><div><span class="ic">🔒</span>Protección</div><div><span class="ic">⚙</span>Ajustes</div></nav>
+</div></div>
+
+<div class="wrap"><div class="cap">Protección</div>
+<div class="phone">
+ <div class="status"><span>9:41</span><span>●●●</span></div>
+ <h1>Protección</h1><div class="sub">Lo que evita que te saltes tus propias reglas</div>
+ <div class="scroll">
+  <div class="card warn"><b>Falta 1 permiso</b><div style="margin-top:4px">Sin él, FocusGuard no puede bloquear.</div><span class="btn">Dar permiso</span></div>
+  <div class="card"><div class="title">Modo estricto</div><div class="line">Impide editar tus perfiles y entrar en Ajustes mientras está activo.</div><span class="pill">Desactivado</span><br><span class="btn o">Configurar</span></div>
+  <div class="card"><div class="title">Aprobaciones</div><div class="line">Para apagar algo tendrás que esperar, escribir una frase o caminar.</div><span class="pill">Esperar 24 horas</span><br><span class="btn o">Ver solicitudes (1)</span></div>
+  <div class="card"><div class="row"><div class="grow"><div class="title">Contenido adulto</div><div class="line">Bloquea webs y búsquedas para adultos.</div></div><div class="sw"></div></div></div>
+ </div>
+ <nav><div><span class="ic">⌂</span>Inicio</div><div><span class="ic">▤</span>Estadísticas</div><div class="on"><span class="ic">🔒</span>Protección</div><div><span class="ic">⚙</span>Ajustes</div></nav>
+</div></div>
+</body></html>

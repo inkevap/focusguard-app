@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "templates": [
+    {
+      "id": "redes",
+      "emoji": "📵",
+      "title": "Redes sociales",
+      "description": "Instagram, Facebook, X, TikTok, Snapchat, Threads, Reddit, Pinterest y LinkedIn: las que tengas instaladas y sus webs, con 45 minutos al día entre todas.",
+      "mode": "block",
+      "categories": ["social"],
+      "limitMinutes": 45
+    },
+    {
+      "id": "video",
+      "emoji": "▶️",
+      "title": "Vídeo y streaming",
+      "description": "YouTube, Twitch, Netflix, Disney+ y Prime Video, con una hora al día. Para cortar los Shorts y los Reels, activa «Por categoría» o las secciones dentro de apps al editar el perfil.",
+      "mode": "block",
+      "categories": ["video"],
+      "limitMinutes": 60
+    },
+    {
+      "id": "juegos",
+      "emoji": "🎮",
+      "title": "Juegos",
+      "description": "Steam, Epic, Roblox, Clash, Candy Crush, Free Fire, PUBG y compañía, con media hora al día.",
+      "mode": "block",
+      "categories": ["games"],
+      "limitMinutes": 30
+    },
+    {
+      "id": "apuestas",
+      "emoji": "🎰",
+      "title": "Apuestas y casinos",
+      "description": "Las casas de apuestas y casinos más conocidos, bloqueados siempre. El filtro DNS las cubre también fuera de los navegadores.",
+      "mode": "block",
+      "webs": ["bet365.com", "betway.com", "1xbet.com", "williamhill.com", "pokerstars.com", "codere.es", "bwin.com", "stake.com", "888casino.com", "betfair.com"]
+    },
+    {
+      "id": "citas",
+      "emoji": "💘",
+      "title": "Citas",
+      "description": "Tinder, Bumble, Badoo, Hinge y Boo, bloqueadas siempre.",
+      "mode": "block",
+      "categories": ["dating"]
+    },
+    {
+      "id": "noticias",
+      "emoji": "📰",
+      "title": "Noticias",
+      "description": "Portales y agregadores de noticias, con media hora al día para no quedarte leyendo titulares.",
+      "mode": "block",
+      "categories": ["news"],
+      "limitMinutes": 30
+    },
+    {
+      "id": "compras",
+      "emoji": "🛒",
+      "title": "Compras",
+      "description": "Amazon, Temu, AliExpress, Shein, Mercado Libre y tiendas parecidas. Si activas aprobaciones con espera de 24 h, comprar por impulso se vuelve difícil.",
+      "mode": "block",
+      "categories": ["shopping"]
+    },
+    {
+      "id": "musica",
+      "emoji": "🎧",
+      "title": "Música y podcasts (opcional)",
+      "description": "Spotify, Amazon Music y similares, con hora y media al día. Quítala si la música no te distrae.",
+      "mode": "block",
+      "categories": ["music"],
+      "limitMinutes": 90
+    },
+    {
+      "id": "mensajeria",
+      "emoji": "💬",
+      "title": "Mensajería con horario (opcional)",
+      "description": "WhatsApp, Messenger, Telegram y similares, solo de 22:00 a 07:00. Las llamadas y las emergencias nunca se bloquean.",
+      "mode": "block",
+      "categories": ["communication"],
+      "schedule": { "days": "all", "from": "22:00", "to": "07:00" }
+    },
+    {
+      "id": "estudio",
+      "emoji": "📚",
+      "title": "Concentración para estudiar",
+      "description": "De lunes a viernes de 16:00 a 20:00 se bloquea todo menos lo que permitas. Trae algunas apps de estudio habituales (reloj, calculadora, notas, documentos); añade las tuyas al editar el perfil.",
+      "mode": "allow_only",
+      "apps": [
+        "com.google.android.deskclock",
+        "com.google.android.calculator",
+        "com.google.android.keep",
+        "com.google.android.apps.docs.editors.docs",
+        "com.google.android.apps.docs.editors.sheets",
+        "com.google.android.apps.tasks",
+        "com.ichi2.anki",
+        "md.obsidian",
+        "com.microsoft.teams",
+        "com.instructure.candroid"
+      ],
+      "schedule": { "days": "weekdays", "from": "16:00", "to": "20:00" }
+    },
+    {
+      "id": "descanso-nocturno",
+      "emoji": "🌙",
+      "title": "Descanso nocturno",
+      "description": "Todos los días de 22:00 a 07:00 solo se permite el reloj y la alarma, además de las llamadas y emergencias, que nunca se bloquean.",
+      "mode": "allow_only",
+      "apps": ["com.google.android.deskclock"],
+      "schedule": { "days": "all", "from": "22:00", "to": "07:00" }
+    }
+  ]
+}

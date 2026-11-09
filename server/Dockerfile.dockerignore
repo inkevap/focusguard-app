@@ -1,0 +1,10 @@
+# Con el contexto en la raíz, solo entra lo que usa el servidor.
+*
+!server/package.json
+!server/package-lock.json
+!server/tsconfig.json
+!server/tsconfig.build.json
+!server/src
+!server/data
+!data/seed
+!data/theme

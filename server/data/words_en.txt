@@ -1,0 +1,14 @@
+# Palabras en inglés que bloquean el contenido adulto (una por línea). Lista inicial: se amplía a mano.
+porn
+pornhub
+xvideos
+xxx
+xxxvideos
+nsfw
+hentai
+onlyfans
+nudes
+sexcam
+camgirl
+camgirls
+freeporn

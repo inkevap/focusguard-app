@@ -1,0 +1,44 @@
+# Android / Gradle
+.gradle/
+build/
+local.properties
+*.apk
+*.aab
+*.keystore
+*.jks
+
+# Kotlin (sesiones del compilador)
+.kotlin/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Servidor
+node_modules/
+secrets/
+dist/
+.env
+*.log
+
+# Sistema
+.DS_Store
+Thumbs.db
+graphify-out/
+# Configuración de Firebase de cada instalación (push); no se sube.
+google-services*.json
+# Plantillas personales (uso real y contexto del usuario): solo en su APK, nunca en git.
+app/personal/
+# Modelos de imágenes de terceros (cada uno con su licencia): solo en el APK de quien los tiene, nunca en git.
+app/modelos/
+*.pass
+fcm.json
+rclone*.conf
+
+# Salida de /brag (vídeos y composiciones generadas)
+brag-output*/
+graphify-out/
+
+# Skills de terceros de Claude Code: no se publican con el código
+.claude/skills/

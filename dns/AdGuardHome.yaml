@@ -1,0 +1,103 @@
+# Plantilla de AdGuard Home para FocusGuard. Se copia a `dns-conf` solo la primera vez (ver docker-compose.yml);
+# a partir de ahí AdGuard Home guarda sus cambios en el volumen y no vuelve a leer este fichero.
+# Sin PROBAR contra una imagen real todavía: al primer arranque, revisar el registro del contenedor y el panel
+# (`ssh -L 3001:localhost:3001 usuario@vps` y abrir http://localhost:3001).
+http:
+  pprof:
+    port: 6060
+    enabled: false
+  # El mismo puerto sirve el panel y las consultas DNS sobre HTTPS (/dns-query). El panel no sale de la máquina:
+  # Compose solo lo publica en 127.0.0.1 y Caddy solo reenvía /dns-query.
+  address: 0.0.0.0:3000
+  session_ttl: 720h
+# Sin usuarios el panel no pide contraseña: aceptable porque solo es alcanzable por túnel SSH. Para ponerla, añade aquí
+# un usuario con su hash bcrypt (nunca la contraseña en claro ni subida al repositorio).
+users: []
+auth_attempts: 5
+block_auth_min: 15
+dns:
+  bind_hosts:
+    - 0.0.0.0
+  port: 53
+  # Sin guardar la IP de los clientes: el resolvedor solo ve los identificadores de dispositivo de la ruta /dns-query/<id>.
+  anonymize_client_ip: true
+  ratelimit: 0
+  upstream_dns:
+    # AdGuard Home resuelve con estos upstreams también el nombre `server` de la lista de reglas; sin esta regla no encontraba el
+    # servidor (`no addresses for host "server"`), cargaba 0 reglas y no bloqueaba nada. 127.0.0.11 es el DNS interno de Docker.
+    - "[/server/]127.0.0.11"
+    - https://dns10.quad9.net/dns-query
+    - https://1.1.1.1/dns-query
+  bootstrap_dns:
+    - 9.9.9.10
+    - 1.1.1.1
+  fallback_dns: []
+  upstream_mode: load_balance
+  protection_enabled: true
+  blocking_mode: default
+  cache_enabled: true
+  cache_size: 4194304
+  cache_optimistic: true
+  edns_client_subnet:
+    enabled: false
+  allowed_clients: []
+  disallowed_clients: []
+  blocked_hosts:
+    - version.bind
+    - id.server
+    - hostname.bind
+tls:
+  # El HTTPS lo pone Caddy; AdGuard Home acepta aquí DoH sin cifrar porque solo lo alcanza Caddy dentro de la red de Docker.
+  enabled: false
+  allow_unencrypted_doh: true
+filters:
+  # La misma lista que usa la app, con las excepciones como reglas de permitido: `GET /blocklists/dns-rules.txt` del servidor.
+  - enabled: true
+    url: http://server:3000/blocklists/dns-rules.txt
+    name: FocusGuard
+    id: 1
+whitelist_filters: []
+user_rules: []
+filtering:
+  filtering_enabled: true
+  filters_update_interval: 1
+  # B9: búsqueda segura forzada en el resolvedor, donde no se puede esquivar desde el navegador.
+  safe_search:
+    enabled: true
+    bing: true
+    duckduckgo: true
+    ecosia: true
+    google: true
+    pixabay: true
+    yandex: true
+    youtube: true
+  safebrowsing_enabled: false
+  parental_enabled: false
+# Sin historial de consultas: contendría todos los dominios que visita cada dispositivo. El historial del usuario (D8) lo lleva
+# cada teléfono por su cuenta, y el compañero solo recibe totales (ver docs/DECISIONES.md): este registro sigue apagado.
+querylog:
+  enabled: false
+  file_enabled: false
+  interval: 24h
+  size_memory: 0
+statistics:
+  enabled: true
+  interval: 24h
+clients:
+  runtime_sources:
+    whois: false
+    arp: false
+    rdns: false
+    dhcp: false
+    hosts: false
+  persistent: []
+log:
+  enabled: true
+  file: ""
+  max_backups: 0
+  max_size: 100
+  max_age: 3
+  compress: false
+  local_time: false
+  verbose: false
+schema_version: 29

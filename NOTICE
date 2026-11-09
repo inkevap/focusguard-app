@@ -1,0 +1,24 @@
+FocusGuard
+Copyright (C) 2026 inkevap
+
+Este programa es software libre: puedes redistribuirlo y modificarlo bajo los términos de la
+GNU Affero General Public License v3.0 (ver LICENSE).
+
+Componentes de terceros
+-----------------------
+
+Los modelos de detección de imágenes NO se incluyen en el repositorio (app/modelos/ está en .gitignore).
+Quien compile la app tiene que obtenerlos de sus fuentes y respetar sus licencias:
+
+- NSFW Model de GantMan (MobileNetV2, 224x224; clases drawings, hentai, neutral, porn, sexy)
+  https://github.com/GantMan/nsfw_model - Licencia MIT.
+- NudeNet 320n (detector YOLOv8n)
+  https://github.com/notAI-tech/NudeNet - Licencia AGPL-3.0. Por eso FocusGuard también se publica bajo AGPL-3.0.
+- TensorFlow Lite (org.tensorflow:tensorflow-lite) - Licencia Apache 2.0.
+
+Las librerías de la app (Kotlin, Jetpack Compose, Room, Koin, WorkManager, Firebase Messaging) y del
+servidor (Fastify, pg, zod, nodemailer) se usan bajo sus propias licencias, listadas en sus paquetes.
+AdGuard Home (filtro DNS) se ejecuta como servicio aparte bajo GPL-3.0.
+
+Los nombres de otras apps que aparecen en el código (paquetes de Android) son identificadores técnicos;
+no se incluye código ni recursos de esas apps.

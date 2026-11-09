@@ -1,0 +1,15 @@
+[
+  {"id": "YOUTUBE_SHORTS", "label": "YouTube Shorts", "packages": ["com.google.android.youtube", "app.revanced.android.youtube"], "viewIds": ["reel_player_page_container", "reel_recycler"]},
+  {"id": "YOUTUBE_SEARCH", "label": "Búsqueda de YouTube", "packages": ["com.google.android.youtube", "app.revanced.android.youtube"], "viewIds": ["search_query", "search_edit_text"]},
+  {"id": "INSTAGRAM_REELS", "label": "Reels de Instagram", "packages": ["com.instagram.android"], "viewIds": ["comment_count", "gesture_manager"]},
+  {"id": "INSTAGRAM_STORIES", "label": "Stories de Instagram", "packages": ["com.instagram.android"], "viewIds": ["reel_viewer_timestamp"]},
+  {"id": "INSTAGRAM_SEARCH", "label": "Búsqueda de Instagram", "packages": ["com.instagram.android"], "viewIds": ["action_bar_search_edit_text", "search_bar_real_field", "search_bar_underline"]},
+  {"id": "INSTAGRAM_DMS", "label": "Mensajes directos de Instagram", "packages": ["com.instagram.android"], "viewIds": ["row_thread_composer_edittext"]},
+  {"id": "SNAPCHAT_STORIES", "label": "Stories de Snapchat", "packages": ["com.snapchat.android"], "viewIds": ["df_large_story"]},
+  {"id": "SNAPCHAT_SPOTLIGHT", "label": "Spotlight de Snapchat", "packages": ["com.snapchat.android"], "viewIds": ["spotlight_attribution_title", "spotlight_container", "favorite", "ngs_spotlight_icon_container"]},
+  {"id": "SNAPCHAT_COMMUNITY", "label": "Comunidad de Snapchat", "packages": ["com.snapchat.android"], "viewIds": ["ngs_community_icon_container"]},
+  {"id": "FACEBOOK_REELS", "label": "Reels de Facebook", "packages": ["com.facebook.katana"], "activity": "com.facebook.katana.immersiveactivity.ImmersiveActivity", "texts": ["Reels"]},
+  {"id": "WHATSAPP_CHANNELS", "label": "Canales de WhatsApp", "packages": ["com.whatsapp"], "viewIds": ["newsletter_quick_forwarding_pill_container_key", "follow_channel_button"]},
+  {"id": "WHATSAPP_STATUS", "label": "Estados de WhatsApp", "packages": ["com.whatsapp"], "viewIds": ["status_playback_image", "status_playback_video"]},
+  {"id": "X_SEARCH", "label": "Búsqueda de X", "packages": ["com.twitter.android"], "viewIds": ["query", "query_view"]}
+]

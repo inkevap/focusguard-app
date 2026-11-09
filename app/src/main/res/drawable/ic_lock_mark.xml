@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- El escudo con anillo de enfoque de la pantalla de bloqueo; se tiñe con el color del texto de la paleta. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="1.6"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M12,3L19,6V11C19,15.6 16,19.6 12,21C8,19.6 5,15.6 5,11V6Z M8.4,11.5a3.6,3.6 0,1 0,7.2 0a3.6,3.6 0,1 0,-7.2 0z"/>
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M10.5,11.5a1.5,1.5 0,1 0,3 0a1.5,1.5 0,1 0,-3 0z"/>
+</vector>

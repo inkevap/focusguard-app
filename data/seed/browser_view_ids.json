@@ -1,0 +1,162 @@
+[
+  {
+    "packageName": "com.android.chrome",
+    "viewId": ":id/url_bar"
+  },
+  {
+    "packageName": "com.chrome.beta",
+    "viewId": ":id/url_bar"
+  },
+  {
+    "packageName": "org.chromium.chrome.browser",
+    "viewId": ":id/url_bar"
+  },
+  {
+    "packageName": "com.sec.android.app.sbrowser",
+    "viewId": ":id/location_bar_edit_text"
+  },
+  {
+    "packageName": "com.android.browser",
+    "viewId": ":id/url"
+  },
+  {
+    "packageName": "com.opera.browser",
+    "viewId": ":id/url_field"
+  },
+  {
+    "packageName": "com.opera.mini.native",
+    "viewId": ":id/url_field"
+  },
+  {
+    "packageName": "com.opera.browser.beta",
+    "viewId": ":id/url_field"
+  },
+  {
+    "packageName": "com.opera.mini.native.beta",
+    "viewId": ":id/url_field"
+  },
+  {
+    "packageName": "com.opera.touch",
+    "viewId": ":id/addressbarEdit"
+  },
+  {
+    "packageName": "com.huawei.browser",
+    "viewId": ":id/url_bar"
+  },
+  {
+    "packageName": "com.ksmobile.cb",
+    "viewId": ":id/bk"
+  },
+  {
+    "packageName": "org.mozilla.firefox",
+    "viewId": ":id/url_bar_title"
+  },
+  {
+    "packageName": "org.mozilla.firefox_beta",
+    "viewId": ":id/url_bar_title"
+  },
+  {
+    "packageName": "com.microsoft.emmx",
+    "viewId": ":id/url_bar"
+  },
+  {
+    "packageName": "com.brave.browser",
+    "viewId": ":id/url_bar"
+  },
+  {
+    "packageName": "com.ecosia.android",
+    "viewId": ":id/url_bar"
+  },
+  {
+    "packageName": "com.mx.browser",
+    "viewId": ":id/wt_title",
+    "clearUrl": false
+  },
+  {
+    "packageName": "com.mi.globalbrowser.mini",
+    "viewId": ":id/url_bar"
+  },
+  {
+    "packageName": "mark.via.gp",
+    "viewId": ":id/n"
+  },
+  {
+    "packageName": "com.kiwibrowser.browser",
+    "viewId": ":id/url_bar"
+  },
+  {
+    "packageName": "com.duckduckgo.mobile.android",
+    "viewId": ":id/omnibarTextInput",
+    "clearUrl": false,
+    "showLocalHtml": false
+  },
+  {
+    "packageName": "org.mozilla.firefox",
+    "viewId": ":id/mozac_browser_toolbar_url_view"
+  },
+  {
+    "packageName": "org.mozilla.firefox_beta",
+    "viewId": ":id/mozac_browser_toolbar_url_view"
+  },
+  {
+    "packageName": "org.bromite.bromite",
+    "viewId": ":id/url_bar"
+  },
+  {
+    "packageName": "mobi.mgeek.TunnyBrowser",
+    "viewId": ":id/title",
+    "clearUrl": false
+  },
+  {
+    "packageName": "com.cloudmosa.puffinFree",
+    "viewId": ":id/webTitleTextView"
+  },
+  {
+    "packageName": "com.noxgroup.app.browser",
+    "viewId": ":id/url"
+  },
+  {
+    "packageName": "com.nationaledtech.spinbrowser",
+    "viewId": ":id/mozac_browser_toolbar_url_view"
+  },
+  {
+    "packageName": "com.nhn.android.search",
+    "viewId": ".InAppBrowser:id/url_input_window_text"
+  },
+  {
+    "packageName": "com.nhn.android.search",
+    "viewId": ".InAppBrowser:id/url_window_text"
+  },
+  {
+    "packageName": "com.vivaldi.browser",
+    "viewId": ":id/url_bar"
+  },
+  {
+    "packageName": "com.android.chrome",
+    "viewId": ":id/origin"
+  },
+  {
+    "packageName": "net.upx.proxy.browser",
+    "viewId": ":id/url_bar"
+  },
+  {
+    "packageName": "com.microsoft.bing",
+    "viewId": ":id/iab_address_bar_text_view"
+  },
+  {
+    "packageName": "com.google.android.googlequicksearchbox",
+    "viewId": ":id/googleapp_srp_search_box_text"
+  },
+  {
+    "packageName": "org.mozilla.firefox",
+    "viewId": "ADDRESSBAR_URL_BOX",
+    "detectionMethod": "COMPOSE_TEST_TAG",
+    "extractionMethod": "CONTENT_DESC"
+  },
+  {
+    "packageName": "org.mozilla.firefox_beta",
+    "viewId": "ADDRESSBAR_URL_BOX",
+    "detectionMethod": "COMPOSE_TEST_TAG",
+    "extractionMethod": "CONTENT_DESC"
+  }
+]

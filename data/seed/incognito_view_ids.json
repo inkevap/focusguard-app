@@ -1,0 +1,22 @@
+[
+  {
+    "packageName": "com.android.chrome",
+    "viewId": ":id/location_bar_incognito_badge"
+  },
+  {
+    "packageName": "com.microsoft.emmx",
+    "viewId": ":id/incognito_badge"
+  },
+  {
+    "packageName": "com.brave.browser",
+    "viewId": ":id/location_bar_incognito_badge"
+  },
+  {
+    "packageName": "com.ecosia.android",
+    "viewId": ":id/incognito_badge"
+  },
+  {
+    "packageName": "com.cloudmosa.puffinFree",
+    "viewId": ":id/incognitoBtn"
+  }
+]

@@ -1,0 +1,7 @@
+# Dominios propios que se suman a la lista pública de bloqueo (uno por línea, sin esquema ni ruta).
+
+# Manga: el usuario decidió que cuenta como contenido adulto (apagarlo pide aprobación del compañero). Dominios comprobados el 2026-10-28.
+mangadex.org
+mangapill.com
+olympusbiblioteca.com
+manhuaplus.com

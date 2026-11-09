@@ -1,0 +1,15 @@
+# Palabras en español que bloquean el contenido adulto (una por línea). Lista inicial: se amplía a mano.
+# Se comparan como subcadena sobre el texto ya normalizado, así que cada palabra debe ser lo bastante específica.
+porno
+pornografia
+pornografico
+videosxxx
+sexoenvivo
+sexogratis
+sexcam
+camgirl
+camgirls
+hentai
+onlyfans
+desnudas
+fotosdesnudas

@@ -1,0 +1,17 @@
+{$DOMAIN} {
+	encode gzip
+	reverse_proxy server:3000
+}
+
+# Resolvedor DNS sobre HTTPS: solo se reenvía la ruta de consultas; el panel de AdGuard Home no sale a Internet.
+{$DNS_DOMAIN} {
+	# Solo con la forma de un identificador de dispositivo (24 cifras hexadecimales). No autentica: AdGuard Home no comprueba que
+	# el identificador exista (ver dns/README.md).
+	@doh path_regexp ^/dns-query/[a-f0-9]{24}$
+	handle @doh {
+		reverse_proxy dns:3000
+	}
+	handle {
+		respond "No encontrado" 404
+	}
+}
