@@ -1,5 +1,13 @@
 # Cambios
 
+## 0.7.2 (2026-11-11)
+
+Correcciones de una auditoría general; no cambia ninguna función.
+
+- El servicio de bloqueo ya no se cae por un fallo suelto al guardar o limpiar datos (disco lleno, error de la base): pierde ese segundo y sigue bloqueando.
+- Una solicitud aprobada con datos que no se entienden (editar, apagar o borrar un perfil, cambiar el método de aprobación) se descarta con un mensaje en vez de cerrar la app.
+- Pruebas del servidor: más margen para arrancar la base de pruebas. El servidor desplegado no cambia; no hace falta actualizarlo.
+
 ## 0.7.1 (2026-11-09)
 
 - Panel del compañero: avisos de lo bloqueado por clase de cosa y por perfil, y una casilla por cada función de la app (perfiles, filtros, imágenes, ajustes sensibles…) cuyo cambio aprueba siempre el compañero, sin modo estricto.

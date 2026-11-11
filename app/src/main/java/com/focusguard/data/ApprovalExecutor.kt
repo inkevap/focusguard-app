@@ -71,7 +71,7 @@ class ApprovalExecutor(
             key == KEY_ADULT_ALLOW -> settings.addAdultAllowed(request.payload ?: return "Solicitud incompleta.")
             key == KEY_SERVER_CHANGE -> if (!account.changeServer(request.payload ?: return "Solicitud incompleta.")) return "No se pudo cambiar: cierra la sesión y comprueba la dirección."
             key == KEY_ADULT_WORD_REMOVE -> settings.removeAdultWord(request.payload ?: return "Solicitud incompleta.")
-            key == KEY_APPROVAL_MODE -> approvals.setMode(ApprovalMode.valueOf(request.payload ?: return "Solicitud incompleta."))
+            key == KEY_APPROVAL_MODE -> approvals.setMode(ApprovalMode.entries.firstOrNull { it.name == request.payload } ?: return "Solicitud incompleta.")
             key == KEY_EMBEDDED -> applyDecoded(request, EmbeddedBrowserPolicy::decode, settings::setEmbeddedBrowsers)?.let { return it }
             key == KEY_IMAGE_ADAPTIVE -> applyDecoded(request, AdaptiveSettings::decode, settings::setImageAdaptive)?.let { return it }
             key == KEY_IMAGE_VIGILANCE -> applyDecoded(request, VigilanceSettings::decode, settings::setImageVigilance)?.let { return it }
@@ -96,7 +96,12 @@ class ApprovalExecutor(
                 }
             }
             key.startsWith("profile_edit:") -> {
-                val edited = ProfileJson.fromJson(JSONObject(request.payload ?: return "Solicitud incompleta."))
+                // Un texto que no se entiende (guardado por una versión distinta de la app) no debe tumbar la app: se descarta la solicitud.
+                val edited = runCatching { ProfileJson.fromJson(JSONObject(request.payload ?: return "Solicitud incompleta.")) }.getOrNull()
+                if (edited == null) {
+                    approvals.remove(request.id)
+                    return "Solicitud incompleta."
+                }
                 val current = profiles.get(edited.id)
                 if (current == null) {
                     approvals.remove(request.id)
@@ -112,7 +117,7 @@ class ApprovalExecutor(
                 }
             }
             key.startsWith("profile_off:") || key.startsWith("profile_delete:") || key.startsWith("session_end:") -> {
-                val id = key.substringAfter(':').toLong()
+                val id = key.substringAfter(':').toLongOrNull() ?: return "Solicitud incompleta."
                 val target = profiles.get(id)
                 if (target == null || !target.canEndEarly) {
                     approvals.remove(request.id)

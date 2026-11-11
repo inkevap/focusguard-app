@@ -19,6 +19,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
+import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.widget.Toast
 import com.focusguard.R
@@ -121,6 +122,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -763,67 +765,79 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
      */
     private suspend fun trackUsage() {
         val power = getSystemService(Context.POWER_SERVICE) as PowerManager
-        var lastSaveMs = 0L
-        var lastBeatMs = 0L
-        var lastEndCheckMs = 0L
         while (scope.isActive) {
             delay(TRACK_INTERVAL_MS)
-            val now = clock.now()
-            val nowMs = now.toEpochMilli()
-            if (nowMs - lastBeatMs >= BEAT_INTERVAL_MS) {
-                lastBeatMs = nowMs
-                health.beat(now)
+            // Un fallo suelto (el disco lleno, una fila que no se entiende) no debe tumbar el servicio y dejar el teléfono sin bloqueo: se pierde ese segundo y se sigue.
+            try {
+                trackTick(power)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.w("FocusGuard", "Fallo en el ciclo de uso", e)
             }
-            val state = currentState
-            val localNow = clock.localAt(now)
-            val context = lazy { currentDeviceContext() }
-            val interactive = power.isInteractive
-            for (profile in profiles) {
-                val limit = profile.limit ?: continue
-                val inUse = interactive && state != null && UsageTargets.counts(profile, state, neverBlock, categories, localNow, now, { context.value })
-                val periodStartMs = Periods.startMs(limit.period, localNow, settings.dayStartMinute.value)
-                if (limit.scope == LimitScope.PER_TARGET) {
-                    tickTargets(profile.id, if (inUse && state != null) ProfileTargets.counterOf(profile, state, categories) else null, nowMs, periodStartMs)
-                } else {
-                    usage[profile.id] = UsageAccumulator.tick(usage[profile.id] ?: ProfileUsage(), nowMs, inUse, periodStartMs)
-                }
+        }
+    }
+
+    private var lastSaveMs = 0L
+    private var lastBeatMs = 0L
+    private var lastEndCheckMs = 0L
+
+    private suspend fun trackTick(power: PowerManager) {
+        val now = clock.now()
+        val nowMs = now.toEpochMilli()
+        if (nowMs - lastBeatMs >= BEAT_INTERVAL_MS) {
+            lastBeatMs = nowMs
+            health.beat(now)
+        }
+        val state = currentState
+        val localNow = clock.localAt(now)
+        val context = lazy { currentDeviceContext() }
+        val interactive = power.isInteractive
+        for (profile in profiles) {
+            val limit = profile.limit ?: continue
+            val inUse = interactive && state != null && UsageTargets.counts(profile, state, neverBlock, categories, localNow, now, { context.value })
+            val periodStartMs = Periods.startMs(limit.period, localNow, settings.dayStartMinute.value)
+            if (limit.scope == LimitScope.PER_TARGET) {
+                tickTargets(profile.id, if (inUse && state != null) ProfileTargets.counterOf(profile, state, categories) else null, nowMs, periodStartMs)
+            } else {
+                usage[profile.id] = UsageAccumulator.tick(usage[profile.id] ?: ProfileUsage(), nowMs, inUse, periodStartMs)
             }
-            updateLimitStatus(state, interactive, now, localNow, nowMs) { context.value }
-            if (state != null) {
-                val decision = decide(state, now)
-                if (decision is BlockDecision.Block) block(decision, state.packageName)
+        }
+        updateLimitStatus(state, interactive, now, localNow, nowMs) { context.value }
+        if (state != null) {
+            val decision = decide(state, now)
+            if (decision is BlockDecision.Block) block(decision, state.packageName)
+        }
+        // Bloqueo activo para las rachas: el filtro de contenido adulto encendido, o algún perfil bloqueando ahora sin un desbloqueo de emergencia vigente.
+        protectedTime.tick(nowMs, settings.adultBlockEnabled.value || decider.isProtecting(profiles, now, usage, context.value, emergency.activeUntil, targetUsage), streaks.dayOf(now))
+        val nudge = settings.nudge.value
+        nudgeTracker.tick(nowMs, nudge.enabled && interactive && state != null && state.packageName in nudge.apps)
+        recordWebs(settings.stats.value, state, interactive, nowMs)
+        announcePomodoroPhases(now)
+        if (nowMs - lastEndCheckMs >= END_CHECK_INTERVAL_MS) {
+            lastEndCheckMs = nowMs
+            endQuickBlocksWhoseConditionIsMet(context.value)
+        }
+        if (interactive) {
+            announceUpcoming(now, localNow)
+            announceNudge(nowMs)
+        }
+        if (nowMs - lastPurgeMs >= PURGE_INTERVAL_MS) {
+            lastPurgeMs = nowMs
+            installTimes.clear()
+            webViewChecks.clear()
+            announceFinishedQuickBlocks(repository.purgeExpired(now))
+            blockLog.prune(now.minusSeconds(RETENTION_DAYS * 86_400L))
+            runCatching { notificationLog.prune(nowMs) }
+            if (lastWebPruneDay != localNow.toLocalDate()) {
+                webStats.prune(localNow.toLocalDate().minusDays(RETENTION_DAYS))
+                runCatching { pauses.prune(now.minusSeconds(RETENTION_DAYS * 86_400L)) }
+                lastWebPruneDay = localNow.toLocalDate()
             }
-            // Bloqueo activo para las rachas: el filtro de contenido adulto encendido, o algún perfil bloqueando ahora sin un desbloqueo de emergencia vigente.
-            protectedTime.tick(nowMs, settings.adultBlockEnabled.value || decider.isProtecting(profiles, now, usage, context.value, emergency.activeUntil, targetUsage), streaks.dayOf(now))
-            val nudge = settings.nudge.value
-            nudgeTracker.tick(nowMs, nudge.enabled && interactive && state != null && state.packageName in nudge.apps)
-            recordWebs(settings.stats.value, state, interactive, nowMs)
-            announcePomodoroPhases(now)
-            if (nowMs - lastEndCheckMs >= END_CHECK_INTERVAL_MS) {
-                lastEndCheckMs = nowMs
-                endQuickBlocksWhoseConditionIsMet(context.value)
-            }
-            if (interactive) {
-                announceUpcoming(now, localNow)
-                announceNudge(nowMs)
-            }
-            if (nowMs - lastPurgeMs >= PURGE_INTERVAL_MS) {
-                lastPurgeMs = nowMs
-                installTimes.clear()
-                webViewChecks.clear()
-                announceFinishedQuickBlocks(repository.purgeExpired(now))
-                blockLog.prune(now.minusSeconds(RETENTION_DAYS * 86_400L))
-                runCatching { notificationLog.prune(nowMs) }
-                if (lastWebPruneDay != localNow.toLocalDate()) {
-                    webStats.prune(localNow.toLocalDate().minusDays(RETENTION_DAYS))
-                    runCatching { pauses.prune(now.minusSeconds(RETENTION_DAYS * 86_400L)) }
-                    lastWebPruneDay = localNow.toLocalDate()
-                }
-            }
-            if (nowMs - lastSaveMs >= SAVE_INTERVAL_MS) {
-                lastSaveMs = nowMs
-                saveUsage()
-            }
+        }
+        if (nowMs - lastSaveMs >= SAVE_INTERVAL_MS) {
+            lastSaveMs = nowMs
+            saveUsage()
         }
     }
 
