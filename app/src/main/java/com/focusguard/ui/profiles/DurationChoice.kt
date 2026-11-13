@@ -16,11 +16,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.focusguard.ui.components.AppCard
 import com.focusguard.ui.components.ChipChoices
+import com.focusguard.ui.components.FgCell
+import com.focusguard.ui.components.FgGroup
 import com.focusguard.ui.components.Hint
 import com.focusguard.ui.components.PrimaryButton
-import com.focusguard.ui.components.SectionTitle
 import com.focusguard.ui.components.DurationSlider
 import com.focusguard.ui.components.StepperField
 import com.focusguard.ui.formatAmountOfTime
@@ -64,13 +64,11 @@ internal fun IrreversibleDurationForm(presets: List<Int>, defaultMinutes: Int, h
     var minutes by rememberSaveable { mutableStateOf(defaultMinutes.toString()) }
     var confirm by rememberSaveable { mutableStateOf(false) }
     val value = minutes.toIntOrNull()?.takeIf { it in 1..MAX_LOCK_MINUTES }
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        AppCard {
-            SectionTitle("Cuánto tiempo")
-            Hint(hint)
-            DurationChoice(minutes, { minutes = it }, presets)
-            if (value == null && minutes.isNotBlank()) Hint("Entre 1 minuto y ${formatAmountOfTime(MAX_LOCK_MINUTES.toLong())}.")
+    GroupStack {
+        FgGroup(header = "Cuánto tiempo", footer = hint) {
+            FgCell { DurationChoice(minutes, { minutes = it }, presets) }
         }
+        if (value == null && minutes.isNotBlank()) ErrorNote("Entre 1 minuto y ${formatAmountOfTime(MAX_LOCK_MINUTES.toLong())}.")
         PrimaryButton(buttonLabel, { confirm = true }, Modifier.fillMaxWidth(), enabled = value != null)
     }
     if (confirm && value != null) {

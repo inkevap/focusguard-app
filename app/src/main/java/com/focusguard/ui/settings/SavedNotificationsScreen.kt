@@ -23,11 +23,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.focusguard.appLabel
 import com.focusguard.data.NotificationLog
-import com.focusguard.ui.components.FgTopBar
-import com.focusguard.ui.components.AppCard
 import com.focusguard.ui.components.AppIcon
-import com.focusguard.ui.components.Hint
-import com.focusguard.ui.components.SecondaryButton
+import com.focusguard.ui.components.FgActionRow
+import com.focusguard.ui.components.FgCell
+import com.focusguard.ui.components.FgGroup
+import com.focusguard.ui.components.FgNote
+import com.focusguard.ui.components.FgScreen
 import com.focusguard.ui.formatLocal
 import java.time.Instant
 import kotlinx.coroutines.Dispatchers
@@ -58,35 +59,28 @@ class SavedNotificationsViewModel(private val log: NotificationLog, private val 
 @Composable
 fun SavedNotificationsScreen(viewModel: SavedNotificationsViewModel, onBack: () -> Unit) {
     val items by viewModel.items.collectAsStateWithLifecycle()
-    Scaffold(
-        topBar = {
-            FgTopBar("Notificaciones guardadas", onBack = onBack)
-        },
-    ) { padding ->
-        SavedNotificationsContent(items, viewModel::clear, Modifier.padding(padding))
-    }
+    SavedNotificationsContent(items, viewModel::clear, onBack = onBack)
 }
 
 @Composable
-internal fun SavedNotificationsContent(items: List<SavedNotification>, onClear: () -> Unit, modifier: Modifier = Modifier) {
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        item {
-            Hint("Son las notificaciones que llegaron mientras la app estaba bloqueada. Se guardan 7 días en este teléfono.")
-            if (items.isNotEmpty()) SecondaryButton("Borrar todas", onClear, Modifier.fillMaxWidth())
+internal fun SavedNotificationsContent(items: List<SavedNotification>, onClear: () -> Unit, modifier: Modifier = Modifier, onBack: () -> Unit = {}) {
+    FgScreen("Notificaciones guardadas", modifier = modifier, onBack = onBack) {
+        item { FgNote("Son las notificaciones que llegaron mientras la app estaba bloqueada. Se guardan 7 días en este teléfono.", Modifier.padding(horizontal = 16.dp)) }
+        if (items.isEmpty()) {
+            item { FgNote("No hay ninguna guardada.", Modifier.padding(horizontal = 16.dp)) }
+        } else {
+            item { FgGroup { FgActionRow("Borrar todas", onClear, danger = true) } }
         }
-        if (items.isEmpty()) item { Text("No hay ninguna guardada.", color = MaterialTheme.colorScheme.onSurfaceVariant) }
         items(items, key = { it.id }) { n ->
-            AppCard {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    AppIcon(n.packageName, size = 24.dp)
-                    Text("${n.app} · ${formatLocal(n.at, withDay = true)}", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            FgGroup {
+                FgCell {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        AppIcon(n.packageName, size = 24.dp)
+                        Text("${n.app} · ${formatLocal(n.at, withDay = true)}", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    if (n.title.isNotBlank()) Text(n.title, style = MaterialTheme.typography.titleMedium)
+                    if (n.text.isNotBlank()) Text(n.text, style = MaterialTheme.typography.bodyMedium)
                 }
-                if (n.title.isNotBlank()) Text(n.title, style = MaterialTheme.typography.titleMedium)
-                if (n.text.isNotBlank()) Text(n.text, style = MaterialTheme.typography.bodyMedium)
             }
         }
     }

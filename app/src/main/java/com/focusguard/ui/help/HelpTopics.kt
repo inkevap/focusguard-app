@@ -113,7 +113,7 @@ internal object HelpTopics {
             notes = listOf(
                 "Apagarlo pide aprobación y se enciende solo pasado un tiempo.",
                 "Las apps de notas, documentos y agenda no se leen por texto (ver «Apps cuyo texto no se lee»).",
-                "Las listas permitidas y las palabras propias se gestionan en la propia pantalla de contenido adulto.",
+                "Las listas permitidas y las palabras propias se gestionan en Protección → Listas, palabras y excepciones.",
             ),
             route = Routes.ADULT,
             keywords = "porno adulto manga filtro palabras",
@@ -138,7 +138,7 @@ internal object HelpTopics {
             example = "Quieres quitar Instagram de «Estudio»: con 24 h de espera, el cambio se aplica mañana si sigues queriéndolo.",
             notes = listOf(
                 "Añadir o endurecer es libre: solo se pide para aflojar.",
-                "Las solicitudes pendientes se ven al abrir Aprobaciones y se pueden cancelar.",
+                "Las solicitudes pendientes se ven en Protección → Aprobaciones y se pueden cancelar.",
                 "Lo que aprueba tu compañero se aplica solo, sin tener que pulsar «Aplicar».",
             ),
             route = "approvals",
@@ -147,7 +147,7 @@ internal object HelpTopics {
         HelpTopic(
             id = "companero",
             title = "Compañero de responsabilidad",
-            summary = "Una persona de confianza que recibe avisos de lo que pasa en tu teléfono y puede aprobar o rechazar tus cambios desde su correo, con un botón. Lo invitas desde Cuenta y compañero y tiene que aceptar.",
+            summary = "Una persona de confianza que recibe avisos de lo que pasa en tu teléfono y puede aprobar o rechazar tus cambios desde su correo, con un botón. Lo invitas desde Ajustes → Compañero y tiene que aceptar.",
             example = "Pides apagar el filtro DNS: a tu compañero le llega un correo con «Aprobar» y «Rechazar».",
             notes = listOf(
                 "Cuando acepta, te llega una notificación.",
@@ -346,7 +346,7 @@ internal object HelpTopics {
         HelpTopic(
             id = "plantillas",
             title = "Plantillas de horario",
-            summary = "Un perfil se puede crear desde una plantilla: enfoque, tiempo para mí, vuelta al cole, vacaciones y otras. La plantilla ya trae horarios y condiciones razonables; después se ajusta como cualquier perfil.",
+            summary = "En la pestaña Perfiles, un perfil se puede crear desde una plantilla: enfoque, tiempo para mí, vuelta al cole, vacaciones y otras. La plantilla ya trae horarios y condiciones razonables; después se ajusta como cualquier perfil.",
             example = "Empiezas con la plantilla de enfoque y solo cambias qué apps bloquea.",
             notes = listOf(
                 "Las plantillas de serie son genéricas. Las personales no vienen con la app.",
@@ -371,7 +371,7 @@ internal object HelpTopics {
             summary = "Puedes recibir avisos antes de que empiece un horario, cuando se acaba un límite o va a acabarse, al terminar un horario o un bloqueo, cuando termina una pausa, una frase motivadora diaria y un resumen semanal. También se pueden guardar las notificaciones de las apps bloqueadas para verlas después, y ocultar 24 h el aviso del sistema de «app en segundo plano».",
             example = "Te avisa diez minutos antes de que empiece tu horario de estudio.",
             notes = listOf(
-                "Cada aviso se activa o apaga por separado en Ajustes.",
+                "Cada aviso se activa o apaga por separado en Ajustes → Avisos; lo de las notificaciones guardadas, en Ajustes → Notificaciones de apps.",
             ),
             route = Routes.NOTIFICATIONS,
             keywords = "avisos notificaciones recordatorios resumen semanal frase",
@@ -448,7 +448,7 @@ internal object HelpTopics {
         HelpTopic(
             id = "ayudas",
             title = "Personas a las que ayudas",
-            summary = "Si alguien te eligió como compañero, en Cuenta ves a quién ayudas y cuántas solicitudes suyas esperan tu respuesta en el correo. Si tú también quieres un compañero, puedes pedirle que lo sea: así os cuidáis los dos.",
+            summary = "Si alguien te eligió como compañero, en Ajustes → Cuenta ves a quién ayudas y cuántas solicitudes suyas esperan tu respuesta en el correo. Si tú también quieres un compañero, puedes pedirle que lo sea: así os cuidáis los dos.",
             example = "Ves «1 solicitud espera tu respuesta» y la apruebas desde el correo.",
             notes = listOf(
                 "Solo cuenta quien confirmó su correo.",
@@ -471,7 +471,7 @@ internal object HelpTopics {
         HelpTopic(
             id = "ajustes",
             title = "Ajustes generales",
-            summary = "En Ajustes están la hora de inicio del día (cuando se reinician los límites), los avisos, el aviso de tiempo, la pantalla de bloqueo, los navegadores integrados, las apps recién instaladas, el filtro de imágenes, el idioma y el tema claro u oscuro, y la sección Ayuda.",
+            summary = "En Ajustes están la cuenta y el compañero, la copia de seguridad, los avisos, las notificaciones de apps, la pantalla de bloqueo, el icono y el PIN de la app, la hora de inicio del día (cuando se reinician los límites), las estadísticas de navegación y la sección Ayuda. El aviso de tiempo y los recordatorios están en Progreso; los navegadores integrados y las apps recién instaladas, en Protección, igual que la detección de imágenes y el filtro DNS.",
             example = "Si duermes de madrugada, pones el inicio del día a las 04:00.",
             notes = listOf(
                 "Apagar o aflojar una protección desde Ajustes pasa por las aprobaciones.",

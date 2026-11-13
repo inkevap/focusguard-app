@@ -23,8 +23,8 @@ android {
         applicationId = "com.focusguard"
         minSdk = 26
         targetSdk = 35
-        versionCode = 32
-        versionName = "0.7.2"
+        versionCode = 33
+        versionName = "0.8.0"
         // Dirección del servidor propio por defecto: `./gradlew assembleRelease -PserverUrl=https://focusguard.midominio.com`.
         // Vacía = la pone el usuario en la app. No es un secreto.
         buildConfigField("String", "SERVER_URL", "\"${providers.gradleProperty("serverUrl").getOrElse("")}\"")

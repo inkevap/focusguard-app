@@ -1,0 +1,422 @@
+<title>Maqueta FocusGuard</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Un teléfono navegable en el centro y, al lado, el mapa de todas las pantallas. Listas agrupadas, una decisión por pantalla. */
+:root{
+  --page:#E4EAE9;--screen:#F1F4F4;--card:#FFFFFF;--fg:#101817;--fg2:#667270;--sep:#E1E7E6;--fill:#E4EAE9;
+  --accent:#0B6E6A;--accent-soft:#D6EEEA;--on-accent:#FFFFFF;
+  --red:#CF3A30;--orange:#C06A10;--green:#23884C;--indigo:#5253C9;--gray:#7C8886;--on-icon:#FFFFFF;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --page:#040707;--screen:#0A0F0F;--card:#171E1D;--fg:#EEF3F2;--fg2:#93A09E;--sep:#273130;--fill:#232D2C;
+  --accent:#5FD0C6;--accent-soft:#12332F;--on-accent:#00201E;
+  --red:#FF6B5E;--orange:#F0A04B;--green:#4CC47A;--indigo:#8F90F7;--gray:#6D7977;--on-icon:#0A0F0F;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --page:#040707;--screen:#0A0F0F;--card:#171E1D;--fg:#EEF3F2;--fg2:#93A09E;--sep:#273130;--fill:#232D2C;
+  --accent:#5FD0C6;--accent-soft:#12332F;--on-accent:#00201E;
+  --red:#FF6B5E;--orange:#F0A04B;--green:#4CC47A;--indigo:#8F90F7;--gray:#6D7977;--on-icon:#0A0F0F;color-scheme:dark}
+html,body{height:100%}
+body{background:var(--page);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.35;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px;box-sizing:border-box}
+*{box-sizing:border-box}
+.wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:14px;height:100%}
+.top{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px}
+.top h1{font-size:17px;margin:0;font-weight:700;letter-spacing:-.01em}
+.top p{margin:0;color:var(--fg2);font-size:13px}
+.stage{display:flex;gap:28px;align-items:stretch;justify-content:center;flex:1;min-height:0}
+.phone{width:390px;max-width:100%;flex:none;background:var(--screen);border-radius:38px;border:8px solid var(--fg);display:flex;flex-direction:column;overflow:hidden;min-height:560px;height:100%;max-height:820px}
+.status{display:flex;justify-content:space-between;padding:10px 26px 2px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.status span:last-child{color:var(--fg2);font-weight:500}
+.nav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;min-height:44px;padding:0 8px}
+.nav b{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px}
+.nav button{background:none;border:0;color:var(--accent);font:inherit;font-size:16px;padding:8px;cursor:pointer;display:flex;align-items:center;gap:2px;border-radius:8px;max-width:130px;white-space:nowrap;overflow:hidden}
+.nav button:last-child{justify-self:end;font-weight:600}
+.nav svg{width:20px;height:20px;flex:none}
+.scr{flex:1;overflow-y:auto;padding:4px 16px 24px;display:flex;flex-direction:column;gap:18px}
+.scr.in{animation:in .22s ease-out}.scr.out{animation:out .22s ease-out}
+@keyframes in{from{transform:translateX(28px);opacity:.3}}@keyframes out{from{transform:translateX(-28px);opacity:.3}}
+@media (prefers-reduced-motion:reduce){.scr.in,.scr.out{animation:none}}
+.big{font-size:32px;font-weight:700;letter-spacing:-.02em;margin:6px 4px 0}
+.g{display:flex;flex-direction:column;gap:6px}
+.gh{font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--fg2);padding:0 16px}
+.gf,.note{font-size:12.5px;color:var(--fg2);padding:0 16px;margin:0}
+.note{font-size:14px;padding:0 4px}
+.list{background:var(--card);border-radius:14px;overflow:hidden}
+.r{display:flex;align-items:center;gap:12px;min-height:46px;padding:9px 14px;position:relative;cursor:default}
+.r+.r::before{content:"";position:absolute;top:0;left:14px;right:0;border-top:1px solid var(--sep)}
+.r.ico+.r.ico::before{left:56px}
+.r[data-to],.r.tap{cursor:pointer}
+.r[data-to]:active,.r.tap:active{background:var(--fill)}
+.r:focus-visible,.chip:focus-visible,.btn:focus-visible,.tile:focus-visible,.tabs button:focus-visible,.nav button:focus-visible,.map a:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.rl{flex:1;min-width:0;display:flex;flex-direction:column}
+.rl span{font-size:16px}.rl small{font-size:13px;color:var(--fg2)}
+.rv{color:var(--fg2);font-size:15px;text-align:right;max-width:46%;font-variant-numeric:tabular-nums}
+.r.d .rl span{color:var(--red)}.r.a .rl span{color:var(--accent)}
+.chev{width:8px;height:14px;flex:none;color:var(--gray);opacity:.7}
+.tick{width:18px;height:18px;color:var(--accent);visibility:hidden;flex:none}.r.on .tick{visibility:visible}
+.ic{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:var(--on-icon);flex:none}
+.ic svg{width:18px;height:18px}
+.sw{width:50px;height:30px;border-radius:15px;background:var(--fill);position:relative;flex:none;cursor:pointer;transition:background .15s}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .15s}
+.sw.on{background:var(--green)}.sw.on::after{transform:translateX(20px)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:0;font:inherit;font-size:15px;padding:8px 14px;border-radius:999px;background:var(--card);color:var(--fg);cursor:pointer}
+.chip.on{background:var(--accent);color:var(--on-accent);font-weight:600}
+.btn{border:0;font:inherit;font-size:17px;font-weight:600;padding:14px;border-radius:14px;background:var(--accent);color:var(--on-accent);cursor:pointer;width:100%}
+.btn.gray{background:var(--fill);color:var(--accent)}.btn.red{background:var(--red);color:var(--on-accent)}.btn.plain{background:none;color:var(--accent);font-weight:500;padding:6px}
+.hero{background:var(--card);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:4px}
+.hero.acc{background:var(--accent);color:var(--on-accent)}
+.hero b{font-size:20px;font-weight:700;letter-spacing:-.01em}.hero span{font-size:14px;opacity:.85}
+.hero .num{font-size:52px;font-weight:700;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.center{text-align:center;align-items:center}
+.pill{align-self:flex-start;font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent);margin-top:6px}
+.hero.acc .pill{background:rgba(255,255,255,.2);color:inherit}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:var(--card);border:0;border-radius:16px;padding:14px;text-align:left;font:inherit;color:var(--fg);cursor:pointer;display:flex;flex-direction:column;gap:8px}
+.tile b{font-size:16px;font-weight:600}.tile small{color:var(--fg2);font-size:12.5px;margin-top:-6px}
+.field{flex:1;min-width:0;border:0;background:none;font:inherit;font-size:16px;color:var(--fg);padding:0;outline:0}
+.field::placeholder{color:var(--gray)}
+.bars{display:flex;align-items:flex-end;gap:8px;height:96px;padding:0 4px}
+.bars div{flex:1;background:var(--accent);border-radius:5px 5px 2px 2px;min-height:3px;position:relative}
+.bars div::after{content:attr(data-l);position:absolute;bottom:-20px;left:0;right:0;text-align:center;font-size:11.5px;color:var(--fg2)}
+.bars.pad{margin-bottom:22px}
+.prog{height:8px;border-radius:4px;background:var(--fill);overflow:hidden}.prog i{display:block;height:100%;background:var(--accent);border-radius:4px}
+.days{display:flex;justify-content:space-between;gap:4px}
+.days button{width:38px;height:38px;border-radius:50%;border:0;font:inherit;font-weight:600;background:var(--card);color:var(--fg);cursor:pointer}
+.days button.on{background:var(--accent);color:var(--on-accent)}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;background:var(--card);border-radius:14px;padding:12px;font-size:13px;text-align:center;font-variant-numeric:tabular-nums}
+.cal i{font-style:normal;aspect-ratio:1;display:grid;place-items:center;border-radius:50%;color:var(--fg2)}
+.cal i.ok{background:var(--accent-soft);color:var(--accent);font-weight:600}.cal i.no{background:var(--fill)}
+.moods{display:flex;justify-content:space-between;gap:6px}
+.moods button{flex:1;border:0;background:var(--card);border-radius:12px;padding:10px 0;font-size:24px;cursor:pointer}
+.moods button.on{background:var(--accent-soft);outline:2px solid var(--accent)}
+.dots{display:flex;gap:10px}.dots i{width:28px;height:28px;border-radius:50%;cursor:pointer}.dots i.on{outline:2px solid var(--fg);outline-offset:2px}
+.lock{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:20px 8px}
+.lock .e{font-size:56px}.lock b{font-size:24px;font-weight:700;letter-spacing:-.02em}.lock p{margin:0;color:var(--fg2)}
+.timer{font-size:64px;font-weight:700;letter-spacing:-.03em;text-align:center;font-variant-numeric:tabular-nums;margin:12px 0 0}
+.ring{width:150px;height:150px;border-radius:50%;border:10px solid var(--accent-soft);margin:6px auto;display:grid;place-items:center;color:var(--accent);font-weight:600}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.tabs{display:flex;background:var(--card);border-top:1px solid var(--sep);padding:6px 4px 10px}
+.tabs button{flex:1;border:0;background:none;font:inherit;font-size:10.5px;font-weight:500;color:var(--gray);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:2px 0;border-radius:8px}
+.tabs button.on{color:var(--accent)}.tabs svg{width:24px;height:24px}
+.map{flex:1;min-width:0;max-width:420px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding-right:4px}
+.map h2{font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--fg2);margin:0 0 6px;font-weight:600}
+.map div{display:flex;flex-wrap:wrap;gap:6px}
+.map a{font-size:13px;padding:5px 10px;border-radius:999px;background:var(--card);color:var(--fg);text-decoration:none;cursor:pointer}
+.map a.on{background:var(--accent);color:var(--on-accent)}
+.map summary{display:none}
+@media (max-width:760px){
+  html,body{height:auto}.wrap{height:auto}.stage{flex-direction:column;align-items:center}
+  .phone{height:calc(100dvh - 110px);min-height:520px;border-width:5px;border-radius:30px}
+  .map{max-width:none;width:100%;overflow:visible}
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1>FocusGuard · maqueta del rediseño</h1>
+    <p>Toca dentro del teléfono como en la app. Todos los datos son de ejemplo. <span id="count"></span></p>
+  </header>
+  <div class="stage">
+    <div class="phone">
+      <div class="status"><span>9:41</span><span id="crumb"></span></div>
+      <div class="nav" id="nav"></div>
+      <div class="scr" id="scr"></div>
+      <nav class="tabs" id="tabs" aria-label="Secciones"></nav>
+    </div>
+    <aside class="map" id="map" aria-label="Mapa de pantallas"></aside>
+  </div>
+</div>
+
+<script>
+const P={home:"M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6h-4v6H5a1 1 0 0 1-1-1z",layers:"M12 3l9 5-9 5-9-5zM3 13l9 5 9-5",chart:"M5 20V10M12 20V4M19 20v-7",shield:"M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z",sliders:"M4 7h10M18 7h2M4 17h2M10 17h10M16 5v4M8 15v4",block:"M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM6 6l12 12",target:"M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z",moon:"M20 14A8 8 0 1 1 10 4a6.5 6.5 0 0 0 10 10z",life:"M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM5.6 5.6l4.3 4.3M14.1 14.1l4.3 4.3M18.4 5.6l-4.3 4.3M9.9 14.1l-4.3 4.3",wind:"M3 9h11a3 3 0 1 0-3-3M3 14h15a3 3 0 1 1-3 3M3 19h6",book:"M5 4h12a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2zM5 18a2 2 0 0 1 2-2h12",flame:"M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z",leaf:"M5 19c0-9 5-14 14-14 0 9-5 14-14 14zM5 19l8-8",test:"M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2",bell:"M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4",lock:"M6 11h12v9H6zM8 11V8a4 4 0 0 1 8 0v3",user:"M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 20c1-4 4-5 8-5s7 1 8 5",users:"M9 5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM2 20c.5-3.5 3-5 7-5s6.5 1.5 7 5M16 5a3.5 3.5 0 0 1 0 7M18 15c2 .5 3.5 2 4 5",cloud:"M7 18a4 4 0 0 1-.5-8A6 6 0 0 1 18 9.5a4.3 4.3 0 0 1-.5 8.5z",image:"M4 5h16v14H4zM4 16l5-5 4 4 3-3 4 4M15 9h.01",globe:"M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18",eyeoff:"M3 3l18 18M10 6a9 9 0 0 1 11 6 9.5 9.5 0 0 1-3 4M6 7.5A9.5 9.5 0 0 0 3 12a9 9 0 0 0 12 5.5M10 10a3 3 0 0 0 4 4",wrench:"M15 4a5 5 0 0 0-5 7l-6 6 3 3 6-6a5 5 0 0 0 7-5l-3 3-3-1-1-3z",key:"M15 4a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM11.5 12.5L4 20M7 17l2 2",clock:"M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7v5l3 2",apps:"M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z",help:"M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7M12 17h.01",pin:"M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11zM12 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4z",phone:"M8 3h8a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM11 18h2",heart:"M12 20s-8-5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 9c0 6-8 11-8 11z",back:"M14 5l-7 7 7 7"};
+const svg=n=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${P[n]}"/></svg>`;
+const CHEV='<svg class="chev" viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1l6 6-6 6"/></svg>';
+const TICK='<svg class="tick" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5l4 4 8-9"/></svg>';
+const ic=(n,c)=>`<span class="ic" style="background:var(--${c||'accent'})">${svg(n)}</span>`;
+
+/* Fila. o: s subtítulo · v valor · to destino · sw interruptor · ck marca (lista de elegir) · ic [icono,color] · d peligro · a acción */
+function R(l,o={}){
+  const cls=['r'];if(o.ic)cls.push('ico');if(o.d)cls.push('d');if(o.a)cls.push('a');
+  if(o.ck!==undefined){cls.push('ckr','tap');if(o.ck)cls.push('on')}
+  if(o.sw!==undefined&&!o.to)cls.push('tap');
+  const tap=o.to||o.ck!==undefined||o.sw!==undefined;
+  return `<div class="${cls.join(' ')}"${o.to?` data-to="${o.to}"`:''}${tap?' role="button" tabindex="0"':''}>${o.ic?ic(o.ic[0],o.ic[1]):''}<div class="rl"><span>${l}</span>${o.s?`<small>${o.s}</small>`:''}</div>${o.v?`<span class="rv">${o.v}</span>`:''}${o.sw!==undefined?`<i class="sw${o.sw?' on':''}"></i>`:''}${o.ck!==undefined?TICK:''}${o.to&&o.sw===undefined?CHEV:''}</div>`;
+}
+const G=(h,rows,f,radio)=>`<section class="g">${h?`<div class="gh">${h}</div>`:''}<div class="list"${radio?' data-radio="1"':''}>${rows.join('')}</div>${f?`<p class="gf">${f}</p>`:''}</section>`;
+const RG=(h,opts,sel,f)=>G(h,opts.map((o,i)=>R(o,{ck:i===sel})),f,true);          // elegir una
+const CK=(h,opts,on,f)=>G(h,opts.map((o,i)=>R(o,{ck:on.includes(i)})),f);          // elegir varias
+const C=(items,sel,multi)=>`<div class="chips"${multi?' data-multi="1"':''}>${items.map((t,i)=>`<button class="chip${(multi?sel.includes(i):i===sel)?' on':''}">${t}</button>`).join('')}</div>`;
+const B=(l,to,k)=>`<button class="btn ${k||''}"${to?` data-to="${to}"`:''}>${l}</button>`;
+const N=t=>`<p class="note">${t}</p>`;
+const F=(ph,v)=>`<div class="r"><input class="field" placeholder="${ph}" value="${v||''}" aria-label="${ph}"></div>`;
+const H=(b,s,o={})=>`<div class="hero ${o.c||''}"${o.to?` data-to="${o.to}" role="button" tabindex="0" style="cursor:pointer"`:''}>${o.num?`<div class="num">${o.num}</div>`:''}<b>${b}</b>${s?`<span>${s}</span>`:''}${o.pill?`<span class="pill">${o.pill}</span>`:''}</div>`;
+const bars=(vals,labels)=>{const m=Math.max(...vals);return `<div class="bars pad">${vals.map((v,i)=>`<div style="height:${Math.round(v/m*100)}%" data-l="${labels[i]}" title="${v}"></div>`).join('')}</div>`};
+const tile=(n,c,b,s,to)=>`<button class="tile" data-to="${to}">${ic(n,c)}<b>${b}</b><small>${s}</small></button>`;
+
+const TABS=[['inicio','Inicio','home'],['perfiles','Perfiles','layers'],['progreso','Progreso','chart'],['proteccion','Protección','shield'],['ajustes','Ajustes','sliders']];
+const APPS=['Instagram','TikTok','X','Facebook','YouTube','Reddit','Snapchat','Telegram','WhatsApp','Chrome'];
+const S={};
+const scr=(id,t,tab,p,b,o={})=>S[id]={t,tab,p,b,...o};
+
+/* ───── Inicio ───── */
+scr('inicio','Inicio',0,null,()=>
+  H('Protección activa','2 perfiles bloqueando ahora',{c:'acc',pill:'Modo estricto activo',to:'perfiles'})+
+  `<div class="tiles">${tile('block','accent','Bloquear ya','Elige qué y cuánto','bloquear')+tile('target','indigo','Enfoque','Foco con descansos','enfoque')+tile('moon','gray','Dormir','Hasta que despiertes','dormir')+tile('wind','orange','Tengo un impulso','Cuenta atrás y respirar','impulso')}</div>`+
+  G('En curso',[R('Bloquear ya',{s:'5 apps · quedan 24 min',v:'Terminar',a:1})])+
+  G(null,[R('Tu racha',{ic:['flame','orange'],v:'12 días',to:'racha'}),R('Ayúdame',{ic:['life','red'],s:'Bloquea todo ahora. No se puede deshacer.',to:'ayudame'})]),{big:1});
+scr('bloquear','Bloquear ya',0,'inicio',()=>
+  `<section class="g"><div class="gh">Cuánto tiempo</div>${C(['15 min','30 min','1 h','2 h'],1)}</section>`+
+  G(null,[R('Otra duración',{v:'Hasta las 10:11',to:'duracion'})])+
+  G('Qué',[R('Qué hace',{v:'Bloquear',to:'p-modo'}),R('Apps',{v:'5',to:'p-apps'}),R('Webs',{v:'Ninguna',to:'p-webs'})])+
+  G(null,[R('Cómo se puede terminar',{v:'Solo al acabar',to:'terminar'})])+B('Bloquear ahora','inicio'));
+scr('duracion','Duración',0,'bloquear',()=>`<div class="timer">45 min</div>${N('Termina a las 10:26')}<input type="range" id="dur" min="5" max="240" step="5" value="45" aria-label="Minutos">`+G(null,[R('Minutos',{v:'− 45 +',s:'De 5 en 5, hasta 24 h'})]));
+scr('terminar','Cómo terminar',0,'bloquear',()=>RG(null,['Cuando yo quiera','Solo cuando acabe el tiempo','Antes, si se cumple algo'],2)+
+  G('Se cumple si',[R('Llego a un lugar',{sw:false}),R('Conecto el cargador',{sw:true}),R('Me conecto a un Wi-Fi',{sw:false}),R('Conecto un dispositivo Bluetooth',{sw:false}),R('Pasa un rato y pido aprobación',{sw:true,s:'Espera de 30 min'})],'Las condiciones solo aparecen con la tercera opción.'));
+scr('enfoque','Enfoque',0,'inicio',()=>
+  `<section class="g"><div class="gh">Ritmo</div>${C(['25 / 5','50 / 10','90 / 15'],0)}</section>`+
+  G(null,[R('Minutos de foco',{v:'− 25 +'}),R('Minutos de descanso',{v:'− 5 +'}),R('Sesiones de foco',{v:'− 4 +'})],'4 bloques · 2 h en total')+
+  G('Qué',[R('Qué hace',{v:'Bloquear',to:'p-modo'}),R('Apps',{v:'5',to:'p-apps'}),R('Webs',{v:'2',to:'p-webs'})])+B('Empezar enfoque','inicio'));
+scr('dormir','Dormir',0,'inicio',()=>
+  `<section class="g"><div class="gh">¿A qué hora despiertas?</div>${C(['06:00','06:30','07:00','07:30','08:00'],2)}</section>`+
+  G(null,[R('Otra hora',{v:'07:00'}),R('Qué sigue permitido',{v:'Alarma, Teléfono +2',to:'p-apps'})],'Bloquea el teléfono hasta que despiertes. No se puede deshacer.')+B('Dormir hasta las 07:00','inicio'));
+scr('ayudame','Ayúdame',0,'inicio',()=>
+  H('Bloquea todo ahora','Solo quedan llamadas y emergencias. No se puede deshacer hasta que acabe el tiempo.')+
+  `<section class="g"><div class="gh">Durante</div>${C(['15 min','30 min','1 h','2 h','4 h'],1)}</section>`+B('Activar','ayudame-activo','red'));
+scr('ayudame-activo','Ayúdame',0,'inicio',()=>`<div class="timer">29:58</div>${N('Todo está bloqueado hasta las 10:11.')}`+G(null,[R('Respirar conmigo',{ic:['wind','accent'],to:'respirar'})]));
+scr('impulso','Tengo un impulso',0,'inicio',()=>
+  H('Los impulsos pasan','Casi siempre en menos de 20 minutos. Quédate aquí mientras dura.')+B('Empezar la cuenta atrás','impulso-cuenta')+
+  G(null,[R('Ver mi informe de impulsos',{to:'informe-impulsos'})]));
+scr('impulso-cuenta','Aguanta',0,'impulso',()=>`<div class="timer">18:42</div>`+
+  G(null,[R('Respirar conmigo',{ic:['wind','accent'],to:'respirar'}),R('Ideas mientras tanto',{ic:['leaf','green'],v:'8',to:'ideas'})])+
+  B('Se me pasó','impulso-fin')+B('Cedí al impulso','impulso-fin','gray'));
+scr('respirar','Respirar',0,'impulso-cuenta',()=>`<div class="ring">Inhala · 4</div>${C(['Calma 4-4-6','Relajar 4-7-8','Cuadrada 4-4-4-4','Suave 5-5'],0)}`+
+  G(null,[R('Vibración suave',{sw:true}),R('Sonido suave',{sw:false})])+B('Empezar'));
+scr('ideas','Mientras tanto',0,'impulso-cuenta',()=>G(null,['Beber un vaso de agua','Salir a caminar','Ducha o agua fría en la cara','Hacer ejercicio corto','Llamar o escribir a alguien','Ordenar algo','Escribir lo que sientes','Preparar algo de comer'].map(t=>R(t))));
+scr('impulso-fin','¿Qué lo desencadenó?',0,'impulso',()=>RG(null,['Aburrimiento','Estrés','Soledad','Cansancio','Ansiedad','Otra cosa'],1,'Opcional.')+
+  G(null,[R('Escribir en el diario',{to:'diario'})])+B('Listo','inicio'));
+
+/* ───── Perfiles ───── */
+scr('perfiles','Perfiles',1,null,()=>
+  G(null,[R('📱 Redes sociales',{s:'Lun a vie · 9:00–17:00 · 8 apps',sw:true,to:'perfil'}),R('🎮 Juegos',{s:'Límite de 30 min al día',sw:true,to:'perfil'}),R('🌙 Descanso nocturno',{s:'Todos los días · 22:30–7:00',sw:false,to:'perfil'}),R('💼 Solo trabajo',{s:'Permite 6 apps · en el Wi-Fi Oficina',sw:false,to:'perfil'})])+
+  G(null,[R('Plantillas',{ic:['apps','indigo'],s:'Redes, vídeo, juegos, descanso nocturno…',to:'plantillas'}),R('Quitar bloqueos',{ic:['lock','gray'],s:'Pide apagar todos los perfiles',to:'quitar-bloqueos'})]),{big:1,act:['Nuevo','perfil-nuevo']});
+scr('perfil','Redes sociales',1,'perfiles',()=>
+  H('📱 Redes sociales','Activo ahora · termina a las 17:00',{pill:'Bloqueando 8 apps y 3 webs'})+
+  G(null,[R('Nombre y emoji',{v:'Redes sociales',to:'p-nombre'}),R('Qué hace',{v:'Bloquear',to:'p-modo'})])+
+  G('Qué incluye',[R('Apps',{v:'8',to:'p-apps'}),R('Webs',{v:'3',to:'p-webs'}),R('Categorías',{v:'Redes',to:'p-categorias'}),R('Dentro de apps',{v:'Reels, Shorts',to:'p-secciones'})])+
+  G('Cuándo',[R('Horario',{v:'Lun a vie, 9–17',to:'p-horario'}),R('Condiciones',{v:'Ninguna',to:'p-condiciones'}),R('Límite de uso',{v:'No',to:'p-limite'})])+
+  G('Control',[R('Pausa',{v:'No',to:'p-pausa'}),R('Candado',{v:'Sin candado',to:'p-candado'})],'Con el modo estricto activo no se puede editar el perfil.')+
+  G(null,[R('Eliminar este perfil',{d:1})]));
+scr('perfil-nuevo','Nuevo perfil',1,'perfiles',()=>G(null,[F('Emoji','📚'),F('Nombre','')])+
+  G('Empezar desde',[R('Una plantilla',{to:'plantillas'}),R('Block Me',{s:'Días y horas en un paso',to:'block-me'})])+B('Crear perfil','perfil')+N('Después eliges qué incluye y cuándo.'));
+scr('block-me','Block Me',1,'perfil-nuevo',()=>`<div class="days">${['L','M','X','J','V','S','D'].map((d,i)=>`<button class="${i<5?'on':''}">${d}</button>`).join('')}</div>`+
+  G(null,[R('Desde',{v:'09:00'}),R('Hasta',{v:'17:00'})])+`<section class="g"><div class="gh">Desbloqueo de emergencia</div>${C(['Ninguno','5 min','10 min','15 min'],0)}</section>`+B('Usar','perfil'));
+scr('plantillas','Plantillas',1,'perfiles',()=>G('Para ti',[R('📱 Redes sociales',{s:'6 apps instaladas · 4 webs',to:'perfil'}),R('🎬 Vídeo',{s:'3 apps instaladas · 1 h al día',to:'perfil'})])+
+  G('Todas',[R('🎮 Juegos',{s:'4 apps instaladas',to:'perfil'}),R('🌙 Descanso nocturno',{s:'Solo permite 5 apps',to:'perfil'}),R('🛒 Compras',{s:'2 apps instaladas · 6 webs',to:'perfil'})],'Nada se bloquea hasta que creas el perfil.'));
+scr('quitar-bloqueos','Quitar bloqueos',1,'perfiles',()=>G('Perfiles encendidos',[R('📱 Redes sociales'),R('🎮 Juegos')])+B('Pedir apagarlos todos','aprobaciones'));
+scr('p-nombre','Nombre',1,'perfil',()=>G(null,[F('Emoji','📱'),F('Nombre','Redes sociales')]));
+scr('p-modo','Qué hace',1,'perfil',()=>RG(null,['Bloquear lo que elija','Permitir solo lo que elija'],0));
+scr('p-apps','Apps',1,'perfil',()=>G(null,[F('Buscar','')])+G(null,APPS.map((a,i)=>R(a,{ck:i<5}))),{act:['Aceptar','<']});
+scr('p-webs','Webs',1,'perfil',()=>C(['Dominio','Contiene'],0)+G(null,[F('Por ejemplo reddit.com','')])+
+  G('Añadidas',[R('reddit.com',{v:'Quitar',a:1}),R('twitter.com',{v:'Quitar',a:1}),R('contiene «apuestas»',{v:'Quitar',a:1})]),{act:['Añadir','']});
+scr('p-categorias','Categorías',1,'perfil',()=>CK(null,['Redes sociales','Vídeo','Juegos','Compras','Noticias','Citas','Apuestas'],[0],'Incluye las apps que instales después.'));
+scr('p-secciones','Dentro de apps',1,'perfil',()=>CK(null,['Instagram Reels','YouTube Shorts','Facebook Reels','Snapchat Spotlight','Explorar de Instagram'],[0,1],'Bloquea solo esa parte y deja usar el resto de la app.'));
+scr('p-horario','Horario',1,'perfil',()=>G(null,[R('Lun a vie',{v:'9:00–17:00',to:'p-franja'}),R('Sáb y dom',{v:'10:00–13:00',to:'p-franja'}),R('Añadir un horario',{a:1,to:'p-franja'})],'Sin horarios, el perfil está siempre activo.'));
+scr('p-franja','Franja',1,'p-horario',()=>`<div class="days">${['L','M','X','J','V','S','D'].map((d,i)=>`<button class="${i<5?'on':''}">${d}</button>`).join('')}</div>`+
+  G(null,[R('Desde',{v:'09:00'}),R('Hasta',{v:'17:00'})])+`<div class="prog" title="9:00 a 17:00"><i style="width:33%;margin-left:37.5%"></i></div>`+G(null,[R('Quitar este horario',{d:1})]));
+scr('p-condiciones','Condiciones',1,'perfil',()=>G(null,[R('Red Wi-Fi',{v:'Oficina',to:'p-wifi'}),R('Bluetooth',{v:'Ninguno',to:'p-bluetooth'}),R('Lugar',{v:'Ninguno',to:'p-lugar'}),R('Solo mientras carga',{sw:false})])+
+  RG('Con varias',['Se cumplen todas','Se cumple alguna'],0));
+scr('p-wifi','Red Wi-Fi',1,'p-condiciones',()=>G(null,[R('Oficina',{v:'Quitar',a:1})])+G(null,[F('Nombre de la red',''),R('Usar la red actual',{a:1})]));
+scr('p-bluetooth','Bluetooth',1,'p-condiciones',()=>`<section class="g"><div class="gh">Emparejados</div>${C(['Auriculares','Coche','Reloj'],[],true)}</section>`+G(null,[F('Nombre del dispositivo','')]));
+scr('p-lugar','Lugar',1,'p-condiciones',()=>G(null,[R('Usar mi ubicación actual',{a:1})])+`<section class="g"><div class="gh">Radio</div>${C(['50 m','100 m','200 m','500 m'],1)}</section>`+G(null,[R('Activar fuera del lugar',{sw:false}),R('Quitar',{d:1})]));
+scr('p-limite','Límite de uso',1,'perfil',()=>G(null,[R('Límite de uso',{sw:true})])+
+  `<section class="g"><div class="gh">Qué cuenta</div>${C(['Tiempo','Aperturas','Seguidos'],0)}</section>`+G(null,[R('Minutos',{v:'− 30 +'})])+
+  `<section class="g"><div class="gh">Cada</div>${C(['Por hora','Al día','A la semana'],1)}</section>`+RG('Se reparte',['Entre todas','Cada app aparte'],0));
+scr('p-pausa','Pausa',1,'perfil',()=>`<section class="g"><div class="gh">Pausar durante</div>${C(['5 min','10 min','15 min','30 min'],1)}</section>`+B('Pausar')+G('Pausas anteriores',[R('Ayer, 16:20',{v:'10 min'}),R('Lunes, 11:05',{v:'5 min'})]));
+scr('p-candado','Candado',1,'perfil',()=>G('Para quitarlo habrá que',[R('Esperar un tiempo',{ck:true,v:'10 min'}),R('Pedirlo y esperar',{ck:false,v:'30 min'}),R('Cargador conectado',{ck:false}),R('Escribir un PIN',{ck:false}),R('Que mi compañero lo apruebe',{ck:true})])+B('Poner el candado','perfil'));
+
+/* ───── Progreso ───── */
+scr('progreso','Progreso',2,null,()=>H('días seguidos','Mejor racha: 31 · siguiente hito: 14',{num:'12',to:'racha'})+
+  G('Cómo vas',[R('Estadísticas',{ic:['chart','accent'],v:'2 h 14 min hoy',to:'estadisticas'}),R('Informe semanal',{ic:['clock','indigo'],to:'semanal'}),R('Informe de impulsos',{ic:['wind','orange'],to:'informe-impulsos'})])+
+  G('Herramientas',[R('Diario',{ic:['book','green'],to:'diario'}),R('Programa de recuperación',{ic:['leaf','green'],v:'3 de 7',to:'programa'}),R('Test de adicción',{ic:['test','indigo'],to:'test'}),R('Hábitos y recordatorios',{ic:['bell','red'],to:'habitos'})]),{big:1});
+scr('racha','Tu racha',2,'progreso',()=>H('días seguidos','Hoy va bien: nada bloqueado se abrió',{num:'12',c:'center'})+
+  `<section class="g"><div class="gh">Meta</div>${C(['Sin meta','7','14','30','50','100'],3)}</section>`+
+  G(null,[R('Calendario',{v:'Noviembre',to:'racha-calendario'}),R('Restaurar el 4 de noviembre',{a:1,s:'Último día perdido'}),R('Reiniciar racha',{d:1})]));
+scr('racha-calendario','Noviembre',2,'racha',()=>`<div class="cal">${Array.from({length:30},(_,i)=>`<i class="${i+1===4?'no':i<13?'ok':''}">${i+1}</i>`).join('')}</div>`+G(null,[R('Mes anterior',{a:1})]));
+scr('estadisticas','Estadísticas',2,'progreso',()=>H('2 h 14 min','Uso de hoy · 18 % menos que ayer',{pill:'Media semanal: 2 h 40 min'})+
+  `<section class="g"><div class="gh">Bloqueos de los últimos 7 días · 86</div>${bars([9,14,11,18,7,15,12],['V','S','D','L','M','X','J'])}</section>`+
+  G(null,[R('Lo que más se bloqueó',{v:'Instagram',to:'est-bloqueos'}),R('Uso del teléfono',{v:'64 desbloqueos',to:'est-uso'}),R('Webs',{v:'12',to:'est-webs'})]));
+scr('est-bloqueos','Lo más bloqueado',2,'estadisticas',()=>G(null,[R('Instagram',{v:'31'}),R('TikTok',{v:'22'}),R('reddit.com',{v:'14'}),R('YouTube Shorts',{v:'11'}),R('X',{v:'8'})]));
+scr('est-uso','Uso del teléfono',2,'estadisticas',()=>C(['Hoy','M','L','D','S','V','J'],0)+G(null,[R('Desbloqueos de pantalla',{v:'64'}),R('Rato más largo seguido',{v:'41 min'}),R('Descanso más largo',{v:'2 h 05 min'}),R('Sesiones de bloqueo',{v:'3'})])+
+  G('Apps',[R('WhatsApp',{v:'38 min · 21 veces'}),R('Chrome',{v:'31 min · 9 veces'}),R('Spotify',{v:'24 min · 4 veces'})]));
+scr('est-webs','Webs',2,'estadisticas',()=>G('Hoy',[R('wikipedia.org',{v:'12 min · 4 visitas'}),R('github.com',{v:'9 min · 3 visitas'})])+G(null,[R('Navegación en incógnito',{v:'6 min'})]));
+scr('semanal','Informe semanal',2,'progreso',()=>G('Uso del teléfono',[R('Media diaria',{v:'2 h 40 min'}),R('Frente a la semana anterior',{v:'−22 min'}),R('Total',{v:'18 h 40 min'})])+
+  G('Pantalla y bloqueos',[R('Desbloqueos de pantalla',{v:'431'}),R('Bloqueos',{v:'86'})])+G('Tus días',[R('Con menos uso',{v:'Martes'}),R('Con más uso',{v:'Sábado'})]));
+scr('informe-impulsos','Informe de impulsos',2,'progreso',()=>H('9 impulsos','Últimas 4 semanas · 7 pasaron, 2 veces cediste')+
+  `<section class="g"><div class="gh">Cuándo llegan</div>${bars([1,0,1,2,1,1,3],['L','M','X','J','V','S','D'])}</section>`+
+  G('Qué los desencadena',[R('Aburrimiento',{v:'4'}),R('Cansancio',{v:'3'}),R('Estrés',{v:'2'})])+G('Tu compañero',[R('Enseñarle un resumen semanal',{sw:false})]));
+scr('diario','Diario',2,'progreso',()=>`<section class="g"><div class="gh">¿Cómo te sientes?</div><div class="moods">${['😞','🙁','😐','🙂','😄'].map((m,i)=>`<button class="${i===3?'on':''}">${m}</button>`).join('')}</div></section>`+
+  G(null,[R('Plan de hoy',{v:'2 de 3',to:'diario-plan'}),R('Plan de mañana',{v:'Vacío',to:'diario-plan'}),R('¿Qué podría haber hecho mejor?',{to:'diario-reflexion'}),R('Días anteriores',{v:'14',to:'diario-historial'})]));
+scr('diario-plan','Plan de hoy',2,'diario',()=>CK('En vez de usar el teléfono',['Leer 20 páginas','Salir a correr','Llamar a mi hermano'],[0,1])+G(null,[F('Una actividad','')]),{act:['Planificar','']});
+scr('diario-reflexion','Reflexión',2,'diario',()=>G('¿Qué podría haber hecho mejor hoy?',[F('Escribe aquí','')]),{act:['Guardar','<']});
+scr('diario-historial','Días anteriores',2,'diario',()=>G(null,[R('Miércoles 11',{s:'🙂 · 3 de 3 actividades'}),R('Martes 10',{s:'😐 · 1 de 2 actividades'}),R('Lunes 9',{s:'🙂 · «Dejé el móvil fuera del cuarto»'})]));
+scr('programa','Recuperación',2,'progreso',()=>H('3 de 7 pasos','Siete pasos, uno por día')+`<div class="prog"><i style="width:43%"></i></div>`+
+  G(null,['Entiende qué pasa','Tus disparadores','Tus momentos de riesgo','Tu plan alternativo','Quién te apoya','Si hay un tropiezo','Seguir adelante'].map((t,i)=>R(`${i+1}. ${t}`,i<3?{v:'Hecho'}:i===3?{to:'programa-paso',v:'Hoy'}:{})))+G(null,[R('Empezar de nuevo',{d:1})]));
+scr('programa-paso','Paso 4',2,'programa',()=>H('Tu plan alternativo','Decide ahora qué harás cuando llegue el impulso.')+G(null,[F('Cuando me pase, haré…','')])+G(null,[R('Apuntarlo en el diario',{to:'diario'})])+B('Hecho','programa'));
+scr('test','Test de adicción',2,'progreso',()=>`<div class="prog"><i style="width:30%"></i></div>${N('Pregunta 3 de 10 · sobre el último mes')}`+H('¿Usas el teléfono más tiempo del que pensabas al cogerlo?','')+
+  RG(null,['Nunca','Casi nunca','A veces','A menudo','Casi siempre'],2)+B('Siguiente','test-resultado'));
+scr('test-resultado','Tu resultado',2,'test',()=>H('de 40','Nivel moderado · 3 puntos menos que la última vez',{num:'18',c:'center'})+
+  G('¿Y ahora?',[R('Programa de recuperación',{to:'programa'}),R('Tengo un impulso ahora',{to:'impulso'})])+
+  G(null,[R('Guardar en mi cuenta',{a:1}),R('Resultados anteriores',{v:'3'}),R('Hacerlo de nuevo',{to:'test'}),R('Borrar mis resultados',{d:1})]));
+scr('habitos','Hábitos',2,'progreso',()=>G('Aviso de tiempo',[R('Avisarme sin bloquear',{sw:true}),R('Apps',{v:'3',to:'p-apps'})])+
+  G('Recordatorios',[R('Estirar',{s:'11:00',sw:true}),R('Dejar el móvil fuera del cuarto',{s:'22:00',sw:true}),R('Añadir recordatorio',{a:1})])+
+  G('Pregunta de ánimo',[R('Preguntarme cómo estoy',{sw:true}),R('Hora',{v:'21:00'})]));
+
+/* ───── Protección ───── */
+scr('proteccion','Protección',3,null,()=>H('Falta 1 permiso','Batería sin restricciones. Sin él, Android puede detener el bloqueo.',{pill:'Arreglar',to:'permisos'})+
+  G('Compromiso',[R('Modo estricto',{ic:['lock','accent'],v:'Activo',to:'estricto'}),R('Aprobaciones',{ic:['users','indigo'],v:'1 pendiente',to:'aprobaciones'}),R('Contra la desinstalación',{ic:['shield','green'],v:'Protegido',to:'desinstalacion'})])+
+  G('Filtros',[R('Contenido adulto',{ic:['eyeoff','red'],v:'Activo',to:'adulto'}),R('Filtro DNS',{ic:['globe','accent'],v:'Filtrando',to:'dns'}),R('Detección de imágenes',{ic:['image','orange'],v:'Activa',to:'imagenes'})])+
+  G('Más bloqueos',[R('Apps recién instaladas',{v:'1 h',to:'apps-nuevas'}),R('Navegadores dentro de apps',{v:'Todas',to:'navegadores'}),R('Cerrar ventanas flotantes',{sw:true})])+
+  G(null,[R('¿Algo no bloquea?',{ic:['wrench','gray'],to:'solucionador'}),R('Permisos',{ic:['key','gray'],v:'8 de 9',to:'permisos'})]),{big:1});
+scr('estricto','Modo estricto',3,'proteccion',()=>H('Activo ahora','No puedes editar perfiles ni apagar la protección.',{c:'acc'})+
+  G(null,[R('Activar modo estricto',{sw:true})])+
+  G(null,[R('Qué protege',{v:'7 de 9',to:'e-protege'}),R('Cuándo está activo',{v:'Siempre',to:'p-horario'}),R('Cómo se pausa o se desactiva',{v:'Espera + compañero',to:'e-salida'})])+
+  `<section class="g"><div class="gh">Pausar</div>${C(['5 min','15 min','30 min'],-1)}</section>`+G(null,[R('Desactivar el modo estricto',{d:1,to:'solicitud'})]),{act:['Ayuda','ayuda-tema']});
+scr('e-protege','Qué protege',3,'estricto',()=>CK(null,['No editar perfiles','Cerrar los ajustes que desactivan la app','Bloquear apps recientes','Impedir la pantalla dividida','Cerrar el menú de apagado','Cerrar los diálogos de compra','Cerrar el administrador de tareas y el cambio de usuario','Cerrar el ahorro extremo de batería','Bloquear el panel de notificaciones'],[0,1,2,3,4,6,7]));
+scr('e-salida','Cómo se desactiva',3,'estricto',()=>G('Hará falta',[R('Esperar un tiempo',{ck:true,v:'15 min'}),R('Pedirlo y esperar',{ck:false,v:'60 min'}),R('Seguir el horario',{ck:false}),R('Cargador conectado',{ck:false}),R('Escribir un PIN',{ck:false}),R('Que mi compañero lo apruebe',{ck:true})]),{act:['Guardar','<']});
+scr('aprobaciones','Aprobaciones',3,'proteccion',()=>G('Pendientes · 1',[R('Apagar el filtro DNS',{s:'Esperando a tu compañero · caduca mañana 14:02',to:'solicitud'})])+
+  RG('Cómo se aprueba apagar algo',['Esperar un tiempo','Contar pasos','Escribir un texto a mano','Que lo apruebe mi compañero'],3,'«Compañero» solo aparece si tienes uno activo.'),{act:['Ayuda','ayuda-tema']});
+scr('solicitud','Solicitud',3,'aprobaciones',()=>H('Apagar el filtro DNS','Pedida hoy a las 14:02 · caduca mañana a las 14:02',{pill:'Esperando a tu compañero'})+B('Aplicar','', 'gray')+N('«Aplicar» se enciende cuando tu compañero aprueba desde su correo.')+G(null,[R('Cancelar solicitud',{d:1,to:'aprobaciones'})]));
+scr('desinstalacion','Desinstalación',3,'proteccion',()=>H('Protegido','Desinstalar o apagar FocusGuard pide aprobación.')+B('Pedir permiso para desactivarlo','solicitud','gray'));
+scr('adulto','Contenido adulto',3,'proteccion',()=>G(null,[R('Bloquear contenido adulto',{sw:true})],'Apagarlo pide aprobación y se vuelve a encender solo.')+
+  G(null,[R('Tus palabras y webs',{v:'4',to:'adulto-palabras'}),R('Dejar pasar',{v:'1',to:'adulto-permitidas'}),R('Apps cuyo texto no se lee',{v:'2',to:'p-apps'})])+
+  G('Listas del servidor',[R('Actualizar ahora',{a:1,s:'Actualizadas hoy a las 8:10'})]));
+scr('adulto-palabras','Palabras y webs',3,'adulto',()=>G(null,[F('Palabra o web','')])+G(null,[R('casino',{v:'Quitar',a:1}),R('ejemplo-apuestas.com',{v:'Quitar',a:1}),R('ruleta',{v:'Quitar',a:1})]),{act:['Añadir','']});
+scr('adulto-permitidas','Dejar pasar',3,'adulto',()=>G(null,[F('Web o palabra a permitir','')],'Para permitir algo hay que escribir una frase a mano.')+G(null,[R('anatomia.example.org',{v:'Quitar',a:1})]),{act:['Permitir','']});
+scr('dns','Filtro DNS',3,'proteccion',()=>G(null,[R('Filtro DNS propio',{sw:true,s:'Filtrando'})],'Extiende el filtro a todo el teléfono, también dentro de otras apps.')+
+  G(null,[R('Ver las consultas',{to:'dns-consultas'}),R('Apps fuera del filtro',{v:'1',to:'p-apps'})]));
+scr('dns-consultas','Consultas DNS',3,'dns',()=>C(['Hoy','Ayer','Mar 10'],0)+C(['Bloqueadas · 37','Permitidas · 1.204'],0)+
+  G(null,[R('ads.example.net',{v:'14 veces'}),R('tracker.example.com',{v:'9 veces'}),R('adulto.example.org',{v:'3 veces'})],'Solo para ti: el historial de 30 días no sale del teléfono.')+G(null,[R('Borrar el historial de este teléfono',{d:1})]));
+scr('imagenes','Imágenes',3,'proteccion',()=>G(null,[R('Detectar imágenes',{sw:true})],'Experimental. Las capturas se analizan en el teléfono y no se guardan.')+
+  `<section class="g"><div class="gh">Sensibilidad · Media</div><input type="range" id="sens" min="0" max="4" value="2" aria-label="Sensibilidad"></section>`+
+  G(null,[R('Avisos de lo sugerente',{v:'Uno cada 10 min',to:'img-avisos'}),R('Vigilancia tras lo explícito',{v:'Sí',to:'img-vigilancia'}),R('Modo dinámico',{v:'Sí',to:'img-dinamico'}),R('Contadores',{v:'59 intentos',to:'img-contadores'})]));
+scr('img-avisos','Avisos',3,'imagenes',()=>`<section class="g"><div class="gh">Como mucho uno cada</div>${C(['5 min','10 min','30 min','1 h'],1)}</section>`);
+scr('img-vigilancia','Vigilancia',3,'imagenes',()=>G(null,[R('Vigilar más tras lo explícito',{sw:true})])+
+  `<section class="g"><div class="gh">Cuánto dura</div>${C(['10 min','30 min','1 h'],1)}</section><section class="g"><div class="gh">Cuánto más seguido</div>${C(['Suave','Media','Alta'],1)}</section>`+
+  RG('Qué se vigila más seguido',['Lo de riesgo: redes, vídeo y webs','Todo'],0)+G(null,[R('También tras lo sugerente',{sw:false})]));
+scr('img-dinamico','Modo dinámico',3,'imagenes',()=>G(null,[R('Adaptarse a mi comportamiento',{sw:true})])+
+  `<section class="g"><div class="gh">Cuánto tiempo cuenta un bloqueo</div>${C(['12 h','1 día','3 días','7 días'],1)}</section><section class="g"><div class="gh">Hasta qué nivel puede subir</div>${C(['Nivel 1','Nivel 2','Nivel 3'],1)}</section>`);
+scr('img-contadores','Contadores',3,'imagenes',()=>G(null,[R('Intentos',{v:'59'}),R('Puntuadas',{v:'10'}),R('Saltadas',{v:'49'}),R('Fallidas',{v:'0'})],'Se ponen a cero al reiniciarse la app.')+G(null,[R('Poner los contadores a cero',{d:1})]));
+scr('apps-nuevas','Apps nuevas',3,'proteccion',()=>G(null,[R('Bloquear apps recién instaladas',{sw:true})])+`<section class="g"><div class="gh">Tiempo bloqueada</div>${C(['30 min','1 h','6 h','24 h'],1)}</section>`);
+scr('navegadores','Navegadores',3,'proteccion',()=>G(null,[R('Cerrar navegadores dentro de apps',{sw:true})])+RG(null,['Todas las apps','Solo las que elija'],0)+G(null,[R('Apps elegidas',{v:'Sugeridas: 4',to:'p-apps'})]));
+scr('solucionador','¿Algo no bloquea?',3,'proteccion',()=>G('Imprescindible',[R('Batería sin restricciones',{s:'Android puede detener el bloqueo',v:'Arreglar',a:1})])+
+  G('Recomendado',[R('Inicio automático',{s:'Necesario en Xiaomi, Huawei y Oppo',v:'Abrir',a:1})],'Se vuelve a comprobar al volver a la app.'));
+scr('permisos','Permisos',3,'proteccion',()=>G('Necesarios',[R('Accesibilidad',{v:'Listo'}),R('Acceso de uso',{v:'Listo'}),R('Mostrar sobre otras apps',{v:'Listo'}),R('Batería sin restricciones',{v:'Quitar límite',a:1,s:'Evita que el sistema detenga FocusGuard'})])+
+  G('Recomendados',[R('Administrador del dispositivo',{v:'Listo'}),R('Ubicación',{v:'Listo'}),R('Bluetooth',{v:'Listo'}),R('Acceso a las notificaciones',{v:'Listo'}),R('Ubicación siempre',{v:'Listo'})],'Cada uno abre su pantalla de ajustes de Android y se comprueba solo al volver.'));
+
+/* ───── Ajustes ───── */
+scr('ajustes','Ajustes',4,null,()=>G(null,[R('tu@correo.com',{ic:['user','accent'],s:'Cuenta · correo confirmado',to:'cuenta'})])+
+  G(null,[R('Compañero',{ic:['users','indigo'],v:'1 activo',to:'companero'}),R('Copia de seguridad',{ic:['cloud','green'],v:'Hoy',to:'copia'})])+
+  G(null,[R('Avisos',{ic:['bell','red'],to:'avisos'}),R('Notificaciones de apps',{ic:['phone','orange'],to:'notificaciones'}),R('Pantalla de bloqueo',{ic:['block','accent'],to:'pantalla-bloqueo'}),R('Icono de la app',{ic:['apps','indigo'],v:'FocusGuard',to:'icono'}),R('PIN de la app',{ic:['key','gray'],v:'Activado',to:'pin'})])+
+  G(null,[R('Inicio del día',{v:'04:00',to:'inicio-dia'}),R('Estadísticas de navegación',{to:'nav-stats'})])+
+  G(null,[R('Ayuda',{ic:['help','accent'],to:'ayuda'}),R('Repetir la bienvenida',{a:1,to:'bienvenida'})]),{big:1});
+scr('cuenta','Cuenta',4,'ajustes',()=>H('tu@correo.com','',{pill:'Correo confirmado'})+G(null,[R('Servidor',{v:'servidor.example.com',to:'servidor'}),R('Comprobar de nuevo',{a:1})])+
+  G(null,[R('Cerrar sesión',{d:1,to:'cuenta-entrar'})],'La cuenta sirve para el compañero, la copia de seguridad y la sincronización.'));
+scr('cuenta-entrar','Entrar',4,'ajustes',()=>G(null,[F('Correo',''),F('Contraseña (8 caracteres o más)','')])+B('Iniciar sesión','cuenta')+B('Crear cuenta','cuenta','gray')+B('Olvidé mi contraseña','','plain'));
+scr('servidor','Servidor',4,'cuenta',()=>G(null,[F('Dirección (https://…)','https://servidor.example.com')]),{act:['Guardar','<']});
+scr('companero','Compañero',4,'ajustes',()=>H('ana@correo.com','Recibe avisos y aprueba tus cambios desde su correo.',{pill:'Compañero activo'})+
+  G(null,[R('Avisarle de lo que pasa',{sw:true}),R('Modo parental',{sw:false})])+
+  G('Qué controla',[R('Qué se le avisa',{v:'6 de 9',to:'c-avisos'}),R('De lo bloqueado, de qué',{v:'5 de 9',to:'c-bloqueado'}),R('Qué cambios aprueba',{v:'14 de 14',to:'c-cambios'}),R('Qué pantallas se cierran',{v:'9 de 9',to:'c-pantallas'})])+
+  G(null,[R('Añadir otro compañero',{a:1,to:'c-invitar'}),R('Personas a las que ayudas',{v:'1',to:'c-ayudas'}),R('Pedir que me quite',{d:1,to:'solicitud'})]));
+const LST=(id,t,items,on)=>scr(id,t,4,'companero',()=>CK(null,items,on));
+LST('c-avisos','Qué se le avisa',['Algo se bloqueó','Apagué un perfil','Pausé el modo estricto','Usé el desbloqueo de emergencia','Cambié un ajuste protegido','Falta un permiso','Cedí a un impulso','Perdí la racha','Resumen semanal'],[0,1,2,3,4,5]);
+LST('c-bloqueado','De lo bloqueado',['Contenido adulto','Filtro DNS','Imágenes','Palabras propias','Perfil Redes sociales','Perfil Juegos','Perfil Descanso nocturno','Perfil Solo trabajo','Apps recién instaladas'],[0,1,2,3,4]);
+LST('c-cambios','Qué cambios aprueba',['Apagar un perfil','Editar un perfil','Contenido adulto','Filtro DNS','Detección de imágenes','Modo estricto','Desinstalar la app','Quitar un permiso'],[0,1,2,3,4,5,6,7]);
+LST('c-pantallas','Pantallas que se cierran',['Ajustes que desactivan la app','Apps recientes','Pantalla dividida','Menú de apagado','Diálogos de compra','Administrador de tareas','Ahorro extremo de batería','Panel de notificaciones'],[0,1,2,3,4,5,6,7]);
+scr('c-invitar','Invitar',4,'companero',()=>G(null,[F('Correo de tu compañero','')],'Le llega un correo con un enlace para aceptar.'),{act:['Invitar','<']});
+scr('c-ayudas','A quién ayudas',4,'companero',()=>G(null,[R('luis@correo.com',{s:'Os ayudáis los dos'}),R('marta@correo.com',{v:'Que también sea mi compañera',a:1})]));
+scr('copia','Copia de seguridad',4,'ajustes',()=>H('Tu configuración, a salvo','Última copia: hoy a las 8:10')+
+  G(null,[R('Guardar o restaurar',{to:'copia-guardar'}),R('Sincronizar con otros dispositivos',{v:'Activada',to:'copia-sync'})])+
+  G('En un archivo',[R('Exportar',{a:1}),R('Importar',{a:1})])+G(null,[R('Borrar mis copias',{d:1})]));
+scr('copia-guardar','Guardar o restaurar',4,'copia',()=>G(null,[F('Frase de la copia',''),F('Repite la frase (solo al guardar)','')],'La copia se cifra con esta frase. Sin ella no se puede restaurar.')+B('Guardar ahora')+B('Restaurar la última copia','','gray'));
+scr('copia-sync','Sincronización',4,'copia',()=>H('Sincronización activada','')+G(null,[R('Sincronizar ahora',{a:1}),R('Dejar de sincronizar en este teléfono',{d:1}),R('Borrar lo sincronizado del servidor',{d:1})]));
+scr('avisos','Avisos',4,'ajustes',()=>G('Perfiles',[R('Antes de que empiece un horario',{sw:true}),R('Cuando termina un horario',{sw:false}),R('Cuando una pausa va a terminar',{sw:true})])+
+  G('Límites',[R('Antes de que se acabe un límite',{sw:true}),R('Cuánto te queda mientras usas una app',{sw:true})])+
+  G('Ánimo',[R('Una frase cada día',{sw:false}),R('Resumen de la semana',{sw:true}),R('Tu racha',{sw:true})]));
+scr('notificaciones','Notificaciones',4,'ajustes',()=>G(null,[R('Quitar las de apps bloqueadas',{sw:true}),R('Esconder el aviso de segundo plano',{sw:false})])+G(null,[R('Ver las guardadas',{v:'7',to:'notif-guardadas'})]));
+scr('notif-guardadas','Guardadas',4,'notificaciones',()=>G(null,[R('Instagram',{s:'ana te ha enviado un mensaje · hoy 9:12'}),R('TikTok',{s:'Nuevos vídeos para ti · hoy 8:40'}),R('X',{s:'3 notificaciones nuevas · ayer 22:15'})]),{act:['Borrar','']});
+scr('pantalla-bloqueo','Pantalla de bloqueo',4,'ajustes',()=>G(null,[R('Ver cómo queda',{a:1,to:'bloqueo'})])+
+  G(null,[R('Mensaje propio',{v:'Vuelve a lo tuyo',to:'pb-mensaje'}),R('Emoji',{v:'🌿',to:'pb-mensaje'}),R('Frases motivadoras',{sw:true})])+
+  `<section class="g"><div class="gh">Color</div><div class="dots">${['accent','indigo','green','orange','red','gray'].map((c,i)=>`<i class="${i?'':'on'}" style="background:var(--${c})"></i>`).join('')}</div></section>`+
+  G('Mensajes especiales',[R('Al intentar apagar o desinstalar',{to:'pb-mensaje'}),R('Por app',{v:'2',to:'p-apps'})]));
+scr('pb-mensaje','Mensaje',4,'pantalla-bloqueo',()=>G(null,[F('Mensaje propio (opcional)','Vuelve a lo tuyo'),F('Emoji (opcional)','🌿')]),{act:['Guardar','<']});
+scr('icono','Icono de la app',4,'ajustes',()=>RG(null,['FocusGuard','Calculadora','Notas','Reloj'],0,'Cambia cómo se ve la app en el lanzador.'));
+scr('pin','PIN de la app',4,'ajustes',()=>G(null,[F('PIN actual',''),F('Nuevo PIN (vacío para conservar el actual)','')])+B('Cambiar PIN')+G(null,[R('Quitar PIN',{d:1}),R('Ver la pantalla de entrada',{a:1,to:'pin-entrada'})]));
+scr('inicio-dia','Inicio del día',4,'ajustes',()=>G(null,[R('Hora',{v:'04:00'})],'A esta hora se reinician los límites diarios y las estadísticas.'));
+scr('nav-stats','Navegación',4,'ajustes',()=>G(null,[R('Guardar las webs que visitas',{sw:true}),R('Contar el tiempo en incógnito',{sw:true})],'Se quedan en el teléfono.')+G(null,[R('Borrar estas estadísticas',{d:1})]));
+scr('ayuda','Ayuda',4,'ajustes',()=>G(null,[F('Buscar en la ayuda','')])+G(null,['Perfiles','Horarios y condiciones','Límite de uso','Bloquear ya','Enfoque (Pomodoro)','Dormir y Ayúdame: cuál usar','Contenido adulto','Filtro DNS','Aprobaciones','Compañero de responsabilidad','Modo estricto','Desbloqueo de emergencia'].map(t=>R(t,{to:'ayuda-tema'})),'39 temas en total.'));
+scr('ayuda-tema','Modo estricto',4,'ayuda',()=>N('Impide editar tus perfiles mientras está activo. Para salir hay que cumplir lo que tú elijas: esperar, cargar el teléfono, un PIN o la aprobación de tu compañero.')+
+  G('Por ejemplo',[R('Actívalo después de la primera semana, cuando ya sepas qué reglas quieres proteger.')])+B('Abrir','estricto','gray'));
+
+/* ───── Otras: bienvenida, bloqueo, emergencia, PIN ───── */
+scr('bienvenida','Bienvenida',-1,'ajustes',()=>`<div class="lock"><div class="e">🛡️</div><b>Bienvenido a FocusGuard</b><p>Te ayuda a no caer en lo que ya sabes que te quita tiempo. En un par de minutos dejamos listo un primer bloqueo.</p></div>`+B('Empezar','bienvenida-2')+B('Saltar','inicio','plain'),{bare:1});
+scr('bienvenida-2','Paso 2 de 9',-1,'bienvenida',()=>`<div class="prog"><i style="width:22%"></i></div><h2 class="big">¿Qué quieres conseguir?</h2>`+
+  RG(null,['Usar menos las redes','Concentrarme al trabajar o estudiar','Dormir mejor','Dejar el contenido adulto'],0,'Elige lo más parecido. Luego puedes ajustarlo.')+B('Siguiente','permisos')+N('Los pasos siguientes: qué cuidar, cuándo, contenido adulto, compañero, modo estricto, permisos y prueba. Uno por pantalla.'),{bare:1});
+scr('bloqueo','Bloqueo',-1,'inicio',()=>`<div class="lock"><div class="e">🌿</div><b>Instagram está bloqueado</b><p>Redes sociales · hasta las 17:00</p><p>«Vuelve a lo tuyo»</p></div>`+B('Volver al inicio','inicio')+B('Desbloqueo de emergencia','emergencia','plain'),{bare:1});
+scr('emergencia','Emergencia',-1,'bloqueo',()=>`<div class="prog"><i style="width:16%"></i></div>`+H('Antes de desbloquear','Son seis pasos cortos. Te quedan 2 desbloqueos esta semana.')+B('Empezar','emergencia-2')+B('Volver','bloqueo','plain'));
+scr('emergencia-2','Paso 2 de 6',-1,'emergencia',()=>`<div class="prog"><i style="width:33%"></i></div><h2 class="big">¿Por qué lo bloqueaste?</h2>`+G(null,[F('Tu respuesta','')])+B('Siguiente','emergencia-3')+N('Después: qué ganas si aguantas, cómo te sentirás, tu compromiso escrito a mano y una respiración.'));
+scr('emergencia-3','Respira',-1,'emergencia-2',()=>`<div class="prog"><i style="width:83%"></i></div><div class="ring">0:24</div>${N('El desbloqueo llega solo cuando termina la cuenta atrás.')}`+B('Volver a mi app','inicio','gray'));
+scr('pin-entrada','PIN',-1,'ajustes',()=>`<div class="lock"><div class="e">🔒</div><b>Escribe tu PIN</b><p>● ● ○ ○</p></div>`+B('Entrar','inicio'),{bare:1});
+
+/* ───── Navegación ───── */
+const $=id=>document.getElementById(id);
+let stack=['inicio'],dir='in';
+const cur=()=>stack[stack.length-1];
+function go(id){
+  if(id==='<')return back();
+  if(!S[id])return;
+  if(S[id].p===null){stack=[id]} else stack.push(id);
+  dir='in';render();
+}
+function back(){
+  if(stack.length>1)stack.pop();else{const p=S[cur()].p;if(!p)return;stack=[p]}
+  dir='out';render();
+}
+function render(){
+  const id=cur(),s=S[id],prev=stack.length>1?S[stack[stack.length-2]]:S[s.p];
+  $('nav').hidden=!!s.bare;
+  $('nav').innerHTML=(prev&&!s.big?`<button data-back="1" aria-label="Volver a ${prev.t}">${svg('back')}${prev.t}</button>`:'<span></span>')+`<b>${s.big?'':s.t}</b>`+(s.act?`<button data-to="${s.act[1]}">${s.act[0]}</button>`:'<span></span>');
+  const el=$('scr');el.className='scr';void el.offsetWidth;el.className='scr '+dir;
+  el.innerHTML=(s.big?`<h1 class="big">${s.t}</h1>`:'')+s.b();el.scrollTop=0;
+  $('tabs').hidden=s.tab<0;
+  $('tabs').innerHTML=TABS.map((t,i)=>`<button class="${i===s.tab?'on':''}" data-tab="${t[0]}"${i===s.tab?' aria-current="page"':''}>${svg(t[2])}${t[1]}</button>`).join('');
+  $('crumb').textContent=stack.length>1?'nivel '+stack.length:'';
+  document.querySelectorAll('#map a').forEach(a=>a.classList.toggle('on',a.dataset.jump===id));
+  try{history.replaceState(null,'','#'+id)}catch(e){}
+}
+document.querySelector('.phone').addEventListener('click',e=>{
+  const t=e.target;
+  if(t.closest('[data-back]'))return back();
+  const tab=t.closest('[data-tab]');if(tab){stack=[tab.dataset.tab];dir='in';return render()}
+  const sw=t.closest('.sw');if(sw)return sw.classList.toggle('on');
+  const chip=t.closest('.chip');if(chip){const box=chip.parentElement;if(box.dataset.multi)chip.classList.toggle('on');else box.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===chip));return}
+  const pick=t.closest('.days button,.moods button,.dots i');if(pick){if(pick.closest('.days'))pick.classList.toggle('on');else pick.parentElement.querySelectorAll('*').forEach(c=>c.classList.toggle('on',c===pick));return}
+  const to=t.closest('[data-to]');if(to){if(to.dataset.to)go(to.dataset.to);return}
+  const r=t.closest('.r');if(!r)return;
+  if(r.classList.contains('ckr')){const list=r.parentElement;if(list.dataset.radio)list.querySelectorAll('.ckr').forEach(x=>x.classList.toggle('on',x===r));else r.classList.toggle('on');return}
+  const s2=r.querySelector('.sw');if(s2)s2.classList.toggle('on');
+});
+document.querySelector('.phone').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('[role=button]')){e.preventDefault();e.target.click()}});
+(function map(){
+  const names=[...TABS.map(t=>t[1]),'Bienvenida, bloqueo y PIN'],groups=names.map(()=>[]);
+  Object.entries(S).forEach(([id,s])=>groups[s.tab<0?5:s.tab].push(`<a data-jump="${id}" role="button" tabindex="0">${s.t}</a>`));
+  $('map').innerHTML=groups.map((g,i)=>`<section><h2>${names[i]} · ${g.length}</h2><div>${g.join('')}</div></section>`).join('');
+  $('count').textContent=Object.keys(S).length+' pantallas.';
+  $('map').addEventListener('click',e=>{const a=e.target.closest('[data-jump]');if(!a)return;stack=[a.dataset.jump];dir='in';render();if(innerWidth<=760)document.querySelector('.phone').scrollIntoView({block:'start'})});
+  $('map').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset.jump)e.target.click()});
+})();
+const h=location.hash.slice(1);if(S[h])stack=[h];
+render();
+</script>

@@ -32,10 +32,10 @@ import com.focusguard.decision.ScheduleConflict
 import com.focusguard.decision.ScheduleTemplate
 import com.focusguard.decision.ScheduleTemplates
 import com.focusguard.ui.Days
-import com.focusguard.ui.components.AppCard
 import com.focusguard.ui.components.ChipChoices
+import com.focusguard.ui.components.FgGroup
+import com.focusguard.ui.components.FgRow
 import com.focusguard.ui.components.Hint
-import com.focusguard.ui.components.SectionTitle
 import com.focusguard.ui.formatMinutes
 import com.focusguard.ui.parseMinutes
 import java.time.DayOfWeek
@@ -71,15 +71,14 @@ internal fun TemplatePickerDialog(onPick: (ScheduleTemplate) -> Unit, onDismiss:
 /** Aviso (E12) de que otro perfil del mismo modo coincide en el tiempo. Los bloqueos se suman, así que no impide guardar. */
 @Composable
 internal fun ConflictsCard(conflicts: List<ScheduleConflict>, modifier: Modifier = Modifier) {
-    AppCard(modifier) {
-        SectionTitle("Horarios que coinciden")
-        Hint("Dos perfiles del mismo modo están activos a la vez. No pasa nada: se bloquea la suma de los dos. Si no es lo que quieres, cambia uno de los horarios.")
-        conflicts.forEach {
-            Text(
-                "«${it.otherTitle}»: ${Days.word(it.day)} de ${formatMinutes(it.startMinute)} a ${formatMinutes(it.endMinute)}",
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(top = 8.dp),
-            )
+    GroupStack(modifier) {
+        FgGroup(
+            header = "Horarios que coinciden",
+            footer = "Dos perfiles del mismo modo están activos a la vez. No pasa nada: se bloquea la suma de los dos. Si no es lo que quieres, cambia uno de los horarios.",
+        ) {
+            conflicts.forEach {
+                FgRow("«${it.otherTitle}»", subtitle = "${Days.word(it.day)} de ${formatMinutes(it.startMinute)} a ${formatMinutes(it.endMinute)}")
+            }
         }
     }
 }

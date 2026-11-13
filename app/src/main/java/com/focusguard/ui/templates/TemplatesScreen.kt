@@ -1,24 +1,16 @@
 package com.focusguard.ui.templates
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.focusguard.decision.TimeRanges
 import com.focusguard.model.BlockMode
 import com.focusguard.model.Profile
-import com.focusguard.ui.components.AppCard
-import com.focusguard.ui.components.FgTopBar
-import com.focusguard.ui.components.Hint
-import com.focusguard.ui.components.PrimaryButton
-import com.focusguard.ui.components.SectionLabel
-import com.focusguard.ui.components.SectionTitle
+import com.focusguard.ui.components.FgGroup
+import com.focusguard.ui.components.FgNote
+import com.focusguard.ui.components.FgRow
+import com.focusguard.ui.components.FgScreen
 import com.focusguard.ui.formatAmountOfTime
 import com.focusguard.ui.plural
 
@@ -31,35 +23,32 @@ fun TemplatesScreen(viewModel: TemplatesViewModel, onBack: () -> Unit, onCreated
 
 @Composable
 internal fun TemplatesContent(lists: TemplateLists, onBack: () -> Unit, onCreate: (TemplateItem) -> Unit) {
-    Scaffold(topBar = { FgTopBar("Plantillas de perfil", onBack = onBack) }) { padding ->
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            item { Hint("Elige una y se crea un perfil con sus apps, webs, horario y límite. Después lo cambias como quieras: nada se bloquea hasta que lo creas.") }
-            if (!lists.loaded) item { Hint("Mirando qué apps tienes instaladas…") }
-            if (lists.personal.isNotEmpty()) {
-                item { SectionLabel("Para ti") }
-                items(lists.personal, key = { "p" + it.template.id }) { TemplateCard(it, onCreate) }
-            }
-            if (lists.generic.isNotEmpty()) {
-                item { SectionLabel("Plantillas") }
-                items(lists.generic, key = { "g" + it.template.id }) { TemplateCard(it, onCreate) }
-            }
+    FgScreen("Plantillas de perfil", onBack = onBack) {
+        item {
+            FgNote(
+                "Elige una y se crea un perfil con sus apps, webs, horario y límite. Después lo cambias como quieras: nada se bloquea hasta que lo creas.",
+                Modifier.padding(horizontal = 16.dp),
+            )
+        }
+        if (!lists.loaded) item { FgNote("Mirando qué apps tienes instaladas…", Modifier.padding(horizontal = 16.dp)) }
+        if (lists.personal.isNotEmpty()) {
+            item { FgGroup(header = "Para ti") { lists.personal.forEach { TemplateRow(it, onCreate) } } }
+        }
+        if (lists.generic.isNotEmpty()) {
+            item { FgGroup(header = "Plantillas") { lists.generic.forEach { TemplateRow(it, onCreate) } } }
         }
     }
 }
 
+/** Tocar una plantilla crea el perfil y lo abre para editarlo. */
 @Composable
-private fun TemplateCard(item: TemplateItem, onCreate: (TemplateItem) -> Unit) {
+private fun TemplateRow(item: TemplateItem, onCreate: (TemplateItem) -> Unit) {
     val template = item.template
-    AppCard {
-        SectionTitle("${template.emoji} ${template.title}".trim())
-        Hint(template.description)
-        Hint(summary(item.preview))
-        PrimaryButton("Crear perfil", { onCreate(item) }, Modifier.padding(top = 12.dp))
-    }
+    FgRow(
+        "${template.emoji} ${template.title}".trim(),
+        subtitle = "${template.description}\n${summary(item.preview)}",
+        onClick = { onCreate(item) },
+    )
 }
 
 /** «4 apps instaladas · 14 webs · 45 min al día · De 22:00 a 07:00»: lo que el perfil tendrá en este teléfono. */

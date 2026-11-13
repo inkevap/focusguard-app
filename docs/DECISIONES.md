@@ -248,3 +248,11 @@ Registro de decisiones del proyecto. Añade una entrada por cada una: fecha, dec
 
 - **Avisos por cosa bloqueada**: se elige por clase (`BlockReason`) y por perfil, no por cada app o web (serían demasiadas y dirían qué hay instalado). El aviso general de bloqueos sigue mandando; las clases y perfiles apagados se descartan en el teléfono.
 - **Áreas**: una por función con ajustes sensibles, agrupando las claves de las solicitudes. Lo que no está en ninguna (modo estricto, desinstalar) ya lo decide su propio flujo: el modo estricto manda sobre todo y desinstalar siempre pasa por el compañero.
+
+## Rediseño de la interfaz (2026-11-13)
+
+- **Aspecto**: listas agrupadas (`ui/components/Grouped.kt`) en lugar de tarjetas con borde. La paleta de `Theme.kt` no cambia porque se comparte con los correos del servidor (`data/theme/tokens.json`); el cambio de aspecto sale solo de los componentes.
+- **Cinco pestañas** (Inicio, Perfiles, Progreso, Protección, Ajustes). Estadísticas deja de ser pestaña y pasa a Progreso; los perfiles salen de Inicio a su pestaña para que Inicio sea solo lo urgente.
+- **Subpantallas dentro de la misma pantalla** (`SubPageHost`) y no como rutas de navegación: así la raíz y sus subpantallas comparten ViewModel y borrador, y guardar sigue siendo una sola acción. Las rutas externas (icono, panel rápido, widget) no cambian.
+- **Detección de imágenes** se mueve de Ajustes a Protección, junto a los demás filtros.
+- La maqueta navegable que aprobó el usuario queda en `docs/maqueta-rediseno.html`.

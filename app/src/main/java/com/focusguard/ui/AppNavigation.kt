@@ -56,10 +56,13 @@ import com.focusguard.ui.profiles.PanicScreen
 import com.focusguard.ui.protection.TroubleshooterScreen
 import com.focusguard.ui.profiles.ProfileEditScreen
 import com.focusguard.ui.profiles.ProfilePreviewScreen
+import com.focusguard.ui.profiles.ProfilesScreen
+import com.focusguard.ui.progress.ProgressScreen
 import com.focusguard.ui.profiles.SessionScreen
 import com.focusguard.ui.profiles.UnlockAllScreen
 import com.focusguard.ui.protection.ProtectionScreen
 import com.focusguard.ui.settings.SavedNotificationsScreen
+import com.focusguard.ui.settings.ImageProbeScreen
 import com.focusguard.ui.settings.SettingsScreen
 import com.focusguard.ui.stats.StatsScreen
 import com.focusguard.ui.strict.StrictScreen
@@ -70,7 +73,8 @@ private val MAX_CONTENT_WIDTH = 640.dp
 
 private enum class TopLevel(val route: String, val label: String, val icon: ImageVector) {
     Home("home", "Inicio", FgIcons.Home),
-    Stats("stats", "Estadísticas", FgIcons.Chart),
+    Profiles("profiles", "Perfiles", FgIcons.Apps),
+    Progress("progress", "Progreso", FgIcons.Chart),
     Protection("protection", "Protección", FgIcons.Shield),
     Settings("settings", "Ajustes", FgIcons.Sliders),
 }
@@ -135,21 +139,38 @@ fun AppNavigation(
                     viewModel = koinViewModel(),
                     missingPermissions = missingPermissions,
                     onOpenPermissions = openPermissions,
-                    onEdit = { nav.navigate("profile/$it") },
-                    onPreview = { nav.navigate("preview/$it") },
+                    onOpenProfiles = { nav.goTo(TopLevel.Profiles.route) },
                     onNewSession = { pomodoro -> nav.navigate(if (pomodoro) "session/pomodoro" else Routes.QUICK_BLOCK) },
                     onPanic = { nav.navigate(Routes.PANIC) },
                     streakViewModel = koinViewModel(),
                     onSleep = { nav.navigate(Routes.SLEEP) },
                     onStreak = { nav.navigate(Routes.STREAK) },
                     onUrge = { nav.navigate(Routes.URGE) },
+                )
+            }
+            composable(TopLevel.Profiles.route) {
+                ProfilesScreen(
+                    viewModel = koinViewModel(),
+                    onOpen = { nav.navigate("profile/$it") },
+                    onNew = { nav.navigate("profile/0") },
+                    onTemplates = { nav.navigate(Routes.TEMPLATES) },
+                    onUnlockAll = { nav.navigate(Routes.UNLOCK_ALL) },
+                )
+            }
+            composable(TopLevel.Progress.route) {
+                ProgressScreen(
+                    streakViewModel = koinViewModel(),
+                    onStreak = { nav.navigate(Routes.STREAK) },
+                    onStats = { nav.navigate(Routes.STATS) },
+                    onWeekly = { nav.navigate(Routes.WEEKLY) },
+                    onUrgeReport = { nav.navigate(Routes.URGE_REPORT) },
                     onJournal = { nav.navigate(Routes.JOURNAL) },
                     onRecovery = { nav.navigate(Routes.RECOVERY) },
                     onAssessment = { nav.navigate(Routes.ASSESSMENT) },
-                    onTemplates = { nav.navigate(Routes.TEMPLATES) },
+                    onHabits = { nav.navigate(Routes.HABITS) },
                 )
             }
-            composable(TopLevel.Stats.route) { StatsScreen(viewModel = koinViewModel(), onOpenPermissions = openPermissions, onWeekly = { nav.navigate(Routes.WEEKLY) }) }
+            composable(Routes.STATS) { StatsScreen(viewModel = koinViewModel(), onOpenPermissions = openPermissions, onWeekly = { nav.navigate(Routes.WEEKLY) }, onBack = { nav.popBackStack() }) }
             composable(Routes.HABITS) { HabitsScreen(viewModel = koinViewModel(), onBack = { nav.popBackStack() }) }
             composable(Routes.WEEKLY) { WeeklyScreen(viewModel = koinViewModel(), onBack = { nav.popBackStack() }, onOpenPermissions = openPermissions) }
             composable(TopLevel.Protection.route) {
@@ -162,6 +183,7 @@ fun AppNavigation(
                     onOpenTroubleshooter = { nav.navigate(Routes.TROUBLESHOOTER) },
                     onOpenAdult = { nav.navigate(Routes.ADULT) },
                     onOpenDns = { nav.navigate(Routes.DNS) },
+                    onOpenImages = { nav.navigate(Routes.IMAGES) },
                 )
             }
             composable(TopLevel.Settings.route) {
@@ -171,7 +193,7 @@ fun AppNavigation(
                     onGrantNotificationAccess = { onGrant(Permission.NOTIFICATION_ACCESS) },
                     onOpenSavedNotifications = { nav.navigate(Routes.NOTIFICATIONS) },
                     onOpenAccount = { nav.navigate(Routes.ACCOUNT) },
-                    onOpenHabits = { nav.navigate(Routes.HABITS) },
+                    onOpenBackup = { nav.navigate(Routes.BACKUP) },
                     onOpenHelp = { nav.navigate(Routes.HELP) },
                 )
             }
@@ -203,6 +225,7 @@ fun AppNavigation(
             }
             composable(Routes.DNS) { DnsScreen(viewModel = koinViewModel(), onBack = { nav.popBackStack() }, onOpenLog = { nav.navigate(Routes.DNS_LOG) }) }
             composable(Routes.DNS_LOG) { DnsLogScreen(viewModel = koinViewModel(), onBack = { nav.popBackStack() }) }
+            composable(Routes.IMAGES) { ImageProbeScreen(viewModel = koinViewModel(), onBack = { nav.popBackStack() }) }
             composable(Routes.ADULT) { AdultScreen(viewModel = koinViewModel(), onBack = { nav.popBackStack() }) }
             composable(Routes.BACKUP) { BackupScreen(viewModel = koinViewModel(), onBack = { nav.popBackStack() }) }
             composable(Routes.ACCOUNT) { AccountScreen(viewModel = koinViewModel(), onBack = { nav.popBackStack() }, onOpenBackup = { nav.navigate(Routes.BACKUP) }) }

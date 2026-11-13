@@ -5,7 +5,6 @@ import android.app.Activity
 import android.view.WindowManager
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -40,18 +39,22 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Surface
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.foundation.layout.RowScope
@@ -80,17 +83,16 @@ private const val MAX_PIN_LENGTH = 8
 fun AppCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
-    containerColor: Color = MaterialTheme.colorScheme.surface,
+    containerColor: Color = MaterialTheme.colorScheme.card,
     contentPadding: Dp = 16.dp,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val colors = CardDefaults.cardColors(containerColor = containerColor)
-    val border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     val inner: @Composable ColumnScope.() -> Unit = { Column(Modifier.padding(contentPadding), content = content) }
     if (onClick != null) {
-        Card(onClick = onClick, modifier = modifier.fillMaxWidth(), colors = colors, border = border, content = inner)
+        Card(onClick = onClick, modifier = modifier.fillMaxWidth(), shape = GroupShape, colors = colors, content = inner)
     } else {
-        Card(modifier = modifier.fillMaxWidth(), colors = colors, border = border, content = inner)
+        Card(modifier = modifier.fillMaxWidth(), shape = GroupShape, colors = colors, content = inner)
     }
 }
 
@@ -136,7 +138,7 @@ fun LargeSwitch(checked: Boolean, onCheckedChange: ((Boolean) -> Unit)?, modifie
         checked = checked,
         onCheckedChange = onCheckedChange,
         enabled = enabled,
-        modifier = modifier.padding(horizontal = 6.dp).scale(1.25f),
+        modifier = modifier,
     )
 }
 
@@ -153,14 +155,14 @@ fun SwitchRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 56.dp)
+            .heightIn(min = 48.dp)
             .toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onCheckedChange),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Column(Modifier.weight(1f)) {
-            SectionTitle(title)
-            Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(title, style = MaterialTheme.typography.bodyLarge)
+            if (subtitle.isNotEmpty()) Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         LargeSwitch(checked = checked, onCheckedChange = null, enabled = enabled)
     }
@@ -175,9 +177,11 @@ fun SwitchCard(title: String, subtitle: String, checked: Boolean, onCheckedChang
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FgTopBar(title: String, onBack: (() -> Unit)? = null, backDescription: String = "Volver", actions: @Composable RowScope.() -> Unit = {}) {
-    TopAppBar(
-        title = { Text(title, style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() }) },
-        navigationIcon = { if (onBack != null) IconButton(onClick = onBack) { Icon(FgIcons.Back, contentDescription = backDescription) } },
+    CenterAlignedTopAppBar(
+        title = { Text(title, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.semantics { heading() }) },
+        navigationIcon = {
+            if (onBack != null) IconButton(onClick = onBack) { Icon(FgIcons.ChevronLeft, contentDescription = backDescription, tint = MaterialTheme.colorScheme.primary) }
+        },
         actions = actions,
         colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
     )
@@ -193,13 +197,12 @@ fun HelpAction(onClick: () -> Unit) {
 @Composable
 fun ScreenHeader(title: String, subtitle: String? = null, modifier: Modifier = Modifier, icon: ImageVector? = null) {
     Row(
-        modifier.statusBarsPadding().padding(top = 16.dp, bottom = 8.dp),
+        modifier.statusBarsPadding().padding(top = 20.dp, start = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        icon?.let { IconBadge(it, size = 48.dp) }
         Column {
-            Text(title, style = MaterialTheme.typography.headlineMedium)
+            Text(title, style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = (-0.5).sp), modifier = Modifier.semantics { heading() })
             if (subtitle != null) {
                 Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
@@ -221,10 +224,10 @@ fun FgProgress(
 @Composable
 fun SectionLabel(text: String, modifier: Modifier = Modifier) {
     Text(
-        text = text,
-        style = MaterialTheme.typography.labelLarge,
+        text = text.uppercase(),
+        style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 0.6.sp),
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = modifier.padding(top = 8.dp, start = 4.dp),
+        modifier = modifier.padding(top = 4.dp, start = 16.dp).semantics { heading() },
     )
 }
 
@@ -364,12 +367,15 @@ fun ActionTile(title: String, hint: String, icon: ImageVector, onClick: () -> Un
 
 @Composable
 fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
-    Button(onClick = onClick, enabled = enabled, modifier = modifier.heightIn(min = 48.dp)) { Text(text) }
+    Button(onClick = onClick, enabled = enabled, shape = GroupShape, modifier = modifier.heightIn(min = 50.dp)) { Text(text, style = MaterialTheme.typography.titleMedium) }
 }
 
 @Composable
 fun SecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
-    OutlinedButton(onClick = onClick, enabled = enabled, modifier = modifier.heightIn(min = 48.dp)) { Text(text) }
+    FilledTonalButton(
+        onClick = onClick, enabled = enabled, shape = GroupShape, modifier = modifier.heightIn(min = 50.dp),
+        colors = ButtonDefaults.filledTonalButtonColors(containerColor = MaterialTheme.colorScheme.fill, contentColor = MaterialTheme.colorScheme.primary),
+    ) { Text(text, style = MaterialTheme.typography.titleMedium) }
 }
 
 /** Toda la fila es el área de toque (mínimo 56 dp). */
@@ -378,16 +384,16 @@ fun CheckRow(title: String, hint: String?, checked: Boolean, onCheckedChange: (B
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 56.dp)
+            .heightIn(min = 48.dp)
             .toggleable(value = checked, role = Role.Checkbox, onValueChange = onCheckedChange),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Checkbox(checked = checked, onCheckedChange = null)
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.bodyLarge)
             if (hint != null) Text(hint, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
+        CheckMark(checked)
     }
 }
 
@@ -395,15 +401,15 @@ fun CheckRow(title: String, hint: String?, checked: Boolean, onCheckedChange: (B
 @Composable
 fun RadioRow(title: String, hint: String, selected: Boolean, modifier: Modifier = Modifier, onSelect: () -> Unit) {
     Row(
-        modifier = modifier.fillMaxWidth().heightIn(min = 56.dp).selectable(selected = selected, role = Role.RadioButton, onClick = onSelect),
+        modifier = modifier.fillMaxWidth().heightIn(min = 48.dp).selectable(selected = selected, role = Role.RadioButton, onClick = onSelect),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        RadioButton(selected = selected, onClick = null)
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.bodyLarge)
-            Text(hint, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (hint.isNotEmpty()) Text(hint, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
+        CheckMark(selected)
     }
 }
 
@@ -418,7 +424,14 @@ fun <T> RadioGroup(options: List<Triple<T, String, String>>, selected: T, onSele
 fun <T> ChipChoices(options: List<Pair<T, String>>, selected: T, onSelect: (T) -> Unit, modifier: Modifier = Modifier) {
     FlowRow(modifier, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         options.forEach { (value, label) ->
-            FilterChip(selected = selected == value, onClick = { onSelect(value) }, label = { Text(label) })
+            FilterChip(
+                selected = selected == value, onClick = { onSelect(value) }, label = { Text(label, style = MaterialTheme.typography.bodyMedium) },
+                shape = CircleShape, border = null,
+                colors = FilterChipDefaults.filterChipColors(
+                    containerColor = MaterialTheme.colorScheme.fill, selectedContainerColor = MaterialTheme.colorScheme.primary,
+                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                ),
+            )
         }
     }
 }

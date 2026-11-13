@@ -1,14 +1,7 @@
 package com.focusguard.ui.dns
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -17,18 +10,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.focusguard.data.DnsDay
 import com.focusguard.data.DnsQueryEntity
-import com.focusguard.ui.components.AppCard
 import com.focusguard.ui.components.ChipChoices
-import com.focusguard.ui.components.FgTopBar
-import com.focusguard.ui.components.Hint
-import com.focusguard.ui.components.SecondaryButton
-import com.focusguard.ui.components.SectionTitle
-import com.focusguard.ui.components.ValueRow
-import com.focusguard.ui.icons.FgIcons
+import com.focusguard.ui.components.FgActionRow
+import com.focusguard.ui.components.FgCell
+import com.focusguard.ui.components.FgGroup
+import com.focusguard.ui.components.FgNote
+import com.focusguard.ui.components.FgRow
+import com.focusguard.ui.components.FgScreen
 import com.focusguard.ui.plural
 import com.focusguard.ui.streak.StreakText
 import java.time.LocalDate
@@ -41,13 +32,11 @@ fun DnsLogScreen(viewModel: DnsLogViewModel, onBack: () -> Unit) {
     val selected by viewModel.selectedDay.collectAsStateWithLifecycle()
     val blocked by viewModel.showBlocked.collectAsStateWithLifecycle()
     val hosts by viewModel.hosts.collectAsStateWithLifecycle()
-    Scaffold(topBar = { FgTopBar("Consultas DNS", onBack = onBack) }) { padding ->
-        DnsLogContent(
-            days, selected, blocked, hosts, remember(days) { viewModel.today },
-            DnsLogActions(viewModel::selectDay, viewModel::showBlocked, viewModel::clear),
-            Modifier.padding(padding),
-        )
-    }
+    DnsLogContent(
+        days, selected, blocked, hosts, remember(days) { viewModel.today },
+        DnsLogActions(viewModel::selectDay, viewModel::showBlocked, viewModel::clear),
+        onBack = onBack,
+    )
 }
 
 @Composable
@@ -59,6 +48,8 @@ internal fun DnsLogContent(
     today: Long,
     actions: DnsLogActions,
     modifier: Modifier = Modifier,
+    onBack: (() -> Unit)? = null,
+    snackbar: SnackbarHostState? = null,
 ) {
     var confirmClear by remember { mutableStateOf(false) }
     if (confirmClear) {
@@ -70,55 +61,54 @@ internal fun DnsLogContent(
             dismissButton = { TextButton(onClick = { confirmClear = false }) { Text("Cancelar") } },
         )
     }
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
+    FgScreen("Consultas DNS", modifier, onBack = onBack, snackbar = snackbar) {
         item {
-            AppCard {
-                SectionTitle("Solo para ti", FgIcons.Lock)
-                Hint(
-                    "Aquí ves qué dominios pidió el teléfono, bloqueados y permitidos, durante los últimos 30 días. Se guarda solo en este teléfono. " +
-                        "Tu compañero únicamente recibe, en su informe diario, cuántas consultas se bloquearon y cuántas se permitieron: nunca los dominios.",
-                )
-            }
+            FgNote(
+                "Solo para ti. Aquí ves qué dominios pidió el teléfono, bloqueados y permitidos, durante los últimos 30 días. Se guarda solo en este teléfono. " +
+                    "Tu compañero únicamente recibe, en su informe diario, cuántas consultas se bloquearon y cuántas se permitieron: nunca los dominios.",
+            )
         }
         if (days.isEmpty()) {
-            item { AppCard { Hint("Todavía no hay consultas. Aparecen cuando el filtro DNS está encendido y el teléfono las hace.") } }
-            return@LazyColumn
+            item { FgNote("Todavía no hay consultas. Aparecen cuando el filtro DNS está encendido y el teléfono las hace.") }
+            return@FgScreen
         }
         item {
-            ChipChoices(
-                options = days.map { it.day to dayLabel(it.day, today) },
-                selected = selected ?: days.first().day,
-                onSelect = actions.selectDay,
-            )
-        }
-        val day = days.firstOrNull { it.day == selected } ?: days.first()
-        item {
-            AppCard {
-                ValueRow("Bloqueadas", plural(day.blocked, "consulta", "consultas"))
-                ValueRow("Permitidas", plural(day.allowed, "consulta", "consultas"))
-            }
-        }
-        item {
-            ChipChoices(
-                options = listOf(true to "Bloqueadas", false to "Permitidas"),
-                selected = showBlocked,
-                onSelect = actions.showBlocked,
-            )
-        }
-        if (hosts.isEmpty()) {
-            item { Hint(if (showBlocked) "No se bloqueó nada ese día." else "No hubo consultas permitidas ese día.") }
-        } else {
-            item {
-                AppCard {
-                    hosts.forEach { ValueRow(it.host, plural(it.count, "vez", "veces")) }
+            FgGroup(header = "Día") {
+                FgCell {
+                    ChipChoices(
+                        options = days.map { it.day to dayLabel(it.day, today) },
+                        selected = selected ?: days.first().day,
+                        onSelect = actions.selectDay,
+                    )
                 }
             }
         }
-        item { SecondaryButton("Borrar el historial de este teléfono", { confirmClear = true }, Modifier.fillMaxWidth()) }
+        val day = days.firstOrNull { it.day == selected } ?: days.first()
+        item {
+            FgGroup {
+                FgRow("Bloqueadas", value = plural(day.blocked, "consulta", "consultas"))
+                FgRow("Permitidas", value = plural(day.allowed, "consulta", "consultas"))
+            }
+        }
+        item {
+            FgGroup(header = "Ver") {
+                FgCell {
+                    ChipChoices(
+                        options = listOf(true to "Bloqueadas", false to "Permitidas"),
+                        selected = showBlocked,
+                        onSelect = actions.showBlocked,
+                    )
+                }
+            }
+        }
+        if (hosts.isEmpty()) {
+            item { FgNote(if (showBlocked) "No se bloqueó nada ese día." else "No hubo consultas permitidas ese día.") }
+        } else {
+            item {
+                FgGroup { hosts.forEach { FgRow(it.host, value = plural(it.count, "vez", "veces")) } }
+            }
+        }
+        item { FgGroup { FgActionRow("Borrar el historial de este teléfono", { confirmClear = true }, danger = true) } }
     }
 }
 

@@ -129,7 +129,7 @@ class ScreenshotTest {
 
     private fun homeContent(state: HomeUiState, dark: Boolean) = paparazzi.snapshot {
         FocusGuardTheme(darkTheme = dark) {
-            HomeContent(state, SnackbarHostState(), {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, { _, _ -> }, {})
+            HomeContent(state, SnackbarHostState(), {}, {}, {}, {}, {}, {}, {}, {})
         }
     }
 
@@ -428,11 +428,11 @@ class ScreenshotTest {
     )
 
     @Test fun proteccionClaro() = paparazzi.snapshot {
-        FocusGuardTheme(darkTheme = false) { ProtectionContent(protection, SnackbarHostState(), {}, {}, {}, {}, {}, {}, {}, {}, {}, {}) }
+        FocusGuardTheme(darkTheme = false) { ProtectionContent(protection, SnackbarHostState(), {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}) }
     }
 
     @Test fun proteccionOscuro() = paparazzi.snapshot {
-        FocusGuardTheme(darkTheme = true) { ProtectionContent(protection, SnackbarHostState(), {}, {}, {}, {}, {}, {}, {}, {}, {}, {}) }
+        FocusGuardTheme(darkTheme = true) { ProtectionContent(protection, SnackbarHostState(), {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}) }
     }
 
     private val adultActions = com.focusguard.ui.adult.AdultActions({}, { true }, {}, { _, _ -> true }, {})

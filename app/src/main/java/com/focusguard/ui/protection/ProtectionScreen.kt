@@ -1,38 +1,34 @@
 package com.focusguard.ui.protection
 
-import com.focusguard.ui.icons.FgIcons
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.focusguard.decision.EmbeddedBrowserPolicy
 import com.focusguard.decision.NewAppsPolicy
 import com.focusguard.model.ApprovalMode
 import com.focusguard.model.StrictState
-import com.focusguard.ui.components.AppCard
-import com.focusguard.ui.components.Hint
-import com.focusguard.ui.components.MissingPermissionsCard
-import com.focusguard.ui.components.ScreenHeader
-import com.focusguard.ui.components.SectionTitle
+import com.focusguard.ui.components.FgActionRow
+import com.focusguard.ui.components.FgGroup
+import com.focusguard.ui.components.FgHero
+import com.focusguard.ui.components.FgNote
+import com.focusguard.ui.components.FgRow
+import com.focusguard.ui.components.FgScreen
+import com.focusguard.ui.components.FgSwitchRow
+import com.focusguard.ui.components.SubPageHost
 import com.focusguard.ui.components.rememberMessageSnackbar
-import com.focusguard.ui.label
-import com.focusguard.ui.components.SecondaryButton
-import com.focusguard.ui.components.StatusChip
-import com.focusguard.ui.components.SwitchCard
-import com.focusguard.ui.components.SwitchRow
+import com.focusguard.ui.formatAmountOfTime
 import com.focusguard.ui.formatLocal
+import com.focusguard.ui.icons.FgIcons
+import com.focusguard.ui.label
+import com.focusguard.ui.profiles.GroupStack
 import com.focusguard.ui.rememberTrustedNowMs
+import java.time.Instant
 
 /** Todo lo que Protección necesita para dibujarse. */
 data class ProtectionUiState(
@@ -60,6 +56,7 @@ fun ProtectionScreen(
     onOpenTroubleshooter: () -> Unit,
     onOpenAdult: () -> Unit,
     onOpenDns: () -> Unit,
+    onOpenImages: () -> Unit,
 ) {
     val adultBlock by viewModel.adultBlockEnabled.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
@@ -83,12 +80,20 @@ fun ProtectionScreen(
         onOpenTroubleshooter = onOpenTroubleshooter,
         onOpenAdult = onOpenAdult,
         onOpenDns = onOpenDns,
+        onOpenImages = onOpenImages,
         onAdultBlockChange = viewModel::setAdultBlock,
         onNewAppsChange = viewModel::setNewApps,
         onEmbeddedChange = viewModel::setEmbeddedBrowsers,
         onFoldFloatingChange = viewModel::setFoldFloating,
         onRequestAdminOff = viewModel::requestAdminOff,
     )
+}
+
+/** Las subpantallas de Protección: lo que no cabe en una fila. */
+private enum class ProtectionPage(val title: String) {
+    UNINSTALL("Contra la desinstalación"),
+    NEW_APPS("Apps recién instaladas"),
+    EMBEDDED("Navegadores dentro de apps"),
 }
 
 @Composable
@@ -101,89 +106,113 @@ internal fun ProtectionContent(
     onOpenTroubleshooter: () -> Unit,
     onOpenAdult: () -> Unit,
     onOpenDns: () -> Unit,
+    onOpenImages: () -> Unit,
     onAdultBlockChange: (Boolean) -> Unit,
     onNewAppsChange: (NewAppsPolicy) -> Unit,
     onEmbeddedChange: (EmbeddedBrowserPolicy) -> Unit,
     onFoldFloatingChange: (Boolean) -> Unit,
     onRequestAdminOff: () -> Unit = {},
 ) {
-    Scaffold(contentWindowInsets = WindowInsets(0), snackbarHost = { SnackbarHost(snackbar) }) { padding ->
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            item { ScreenHeader("Protección", "Lo que evita que te saltes tus propias reglas", icon = FgIcons.Shield) }
-            if (state.missingPermissions > 0) item { MissingPermissionsCard(state.missingPermissions, onOpenPermissions) }
-            item {
-                AppCard {
-                    SectionTitle("Modo estricto", FgIcons.Lock)
-                    Hint("Impide editar tus perfiles y entrar en los ajustes que desactivan la app mientras está activo.")
-                    StatusChip(state.strictState.label())
-                    SecondaryButton("Configurar", onOpenStrict, Modifier.padding(top = 12.dp))
-                }
-            }
-            item {
-                AppCard {
-                    SectionTitle("Aprobaciones", FgIcons.CheckCircle)
-                    Hint("Para apagar algo tendrás que esperar, escribir una frase larga o caminar. Así no lo haces por impulso.")
-                    StatusChip(state.approvalMode.label())
-                    if (state.pendingApprovals > 0) {
-                        Hint(if (state.pendingApprovals == 1) "1 solicitud espera una respuesta." else "${state.pendingApprovals} solicitudes esperan una respuesta.")
-                    }
-                    SecondaryButton(
-                        text = if (state.pendingApprovals == 0) "Configurar" else "Ver y cancelar solicitudes (${state.pendingApprovals})",
-                        onClick = onOpenApprovals,
-                        modifier = Modifier.padding(top = 12.dp),
-                    )
-                }
-            }
-            item {
-                AppCard {
-                    SectionTitle("Contra la desinstalación", FgIcons.Shield)
-                    Hint("Mientras el administrador del dispositivo esté activo, Android no deja desinstalar FocusGuard, y sin el servicio de accesibilidad nada vigila esa pantalla. Desactivar cualquiera de los dos pide permiso: una aprobación, o tu compañero.")
-                    if (state.adminGrantUntilMs > state.nowMs) {
-                        Hint("Tienes permiso para desactivarlos en los ajustes de Android hasta las ${formatLocal(java.time.Instant.ofEpochMilli(state.adminGrantUntilMs))}.")
-                    } else {
-                        SecondaryButton("Pedir permiso para desactivarlos", onRequestAdminOff, Modifier.padding(top = 12.dp))
+    var page by rememberSaveable { mutableStateOf<ProtectionPage?>(null) }
+    val adminGranted = state.adminGrantUntilMs > state.nowMs
+    SubPageHost(
+        page = page,
+        onBack = { page = null },
+        root = {
+            FgScreen("Protección", large = true, snackbar = snackbar) {
+                item { PermissionsHero(state.missingPermissions, onOpenPermissions) }
+                item {
+                    FgGroup(header = "Compromiso") {
+                        FgRow("Modo estricto", icon = FgIcons.Lock, value = if (state.strictState == StrictState.INACTIVE) "Inactivo" else state.strictState.label(), onClick = onOpenStrict)
+                        FgRow(
+                            "Aprobaciones", icon = FgIcons.CheckCircle, value = state.approvalMode.label(),
+                            subtitle = when (state.pendingApprovals) {
+                                0 -> null
+                                1 -> "1 solicitud espera una respuesta"
+                                else -> "${state.pendingApprovals} solicitudes esperan una respuesta"
+                            },
+                            onClick = onOpenApprovals,
+                        )
+                        FgRow("Contra la desinstalación", icon = FgIcons.Shield, value = if (adminGranted) "Permiso abierto" else "Protegido", onClick = { page = ProtectionPage.UNINSTALL })
                     }
                 }
-            }
-            item {
-                AppCard {
-                    SectionTitle("¿Algo no bloquea?", FgIcons.Info)
-                    Hint("Revisa qué falta para que FocusGuard funcione bien: permisos, batería y el propio servicio.")
-                    SecondaryButton("Revisar", onOpenTroubleshooter, Modifier.padding(top = 12.dp))
+                item {
+                    FgGroup(header = "Filtros") {
+                        FgSwitchRow(
+                            "Contenido adulto", state.adultBlock, onAdultBlockChange,
+                            subtitle = "Si lo apagas con una aprobación, se enciende solo pasado un día.",
+                        )
+                        FgRow("Listas, palabras y excepciones", subtitle = "Webs, búsquedas y páginas para adultos", onClick = onOpenAdult)
+                        FgRow("Filtro DNS", icon = FgIcons.Globe, onClick = onOpenDns)
+                        FgRow("Detección de imágenes", icon = FgIcons.Block, onClick = onOpenImages)
+                    }
+                }
+                item {
+                    FgGroup(header = "Más bloqueos") {
+                        FgRow("Apps recién instaladas", value = if (state.newApps.enabled) formatAmountOfTime(state.newApps.hours * 60L) else "No", onClick = { page = ProtectionPage.NEW_APPS })
+                        FgRow(
+                            "Navegadores dentro de apps",
+                            value = when {
+                                !state.embedded.enabled -> "No"
+                                state.embedded.allApps -> "Todas"
+                                else -> "Solo algunas"
+                            },
+                            onClick = { page = ProtectionPage.EMBEDDED },
+                        )
+                        FgSwitchRow(
+                            "Cerrar ventanas flotantes", state.foldFloating, onFoldFloatingChange,
+                            subtitle = "Al bloquear una app, intenta cerrar también su ventana de imagen en imagen. Depende del teléfono y puede no funcionar.",
+                        )
+                    }
+                }
+                item {
+                    FgGroup {
+                        FgRow("¿Algo no bloquea?", icon = FgIcons.Info, subtitle = "Revisa permisos, batería y el propio servicio", onClick = onOpenTroubleshooter)
+                        FgRow("Permisos", value = if (state.missingPermissions > 0) "Faltan ${state.missingPermissions}" else "Todo listo", onClick = onOpenPermissions)
+                    }
                 }
             }
-            item {
-                AppCard {
-                    SwitchRow(
-                        title = "Contenido adulto",
-                        subtitle = "Bloquea webs, búsquedas y páginas para adultos con las listas del servidor y las tuyas. Si lo apagas con una aprobación, se enciende solo pasado un día.",
-                        checked = state.adultBlock,
-                        onCheckedChange = onAdultBlockChange,
-                    )
-                    SecondaryButton("Listas, palabras y excepciones", onOpenAdult, Modifier.padding(top = 8.dp))
+        },
+        sub = { current ->
+            FgScreen(current.title, onBack = { page = null }, snackbar = snackbar) {
+                item {
+                    when (current) {
+                        ProtectionPage.UNINSTALL -> UninstallGroups(adminGranted, state.adminGrantUntilMs, onRequestAdminOff)
+                        ProtectionPage.NEW_APPS -> NewAppsCard(state.newApps, onNewAppsChange)
+                        ProtectionPage.EMBEDDED -> EmbeddedBrowsersCard(state.embedded, state.detectedWebViewApps, onEmbeddedChange)
+                    }
                 }
             }
-            item {
-                AppCard {
-                    SectionTitle("Filtro DNS", FgIcons.Globe)
-                    Hint("Bloquea los dominios para adultos en todo el teléfono, también en apps, con tu servidor.")
-                    SecondaryButton("Configurar", onOpenDns, Modifier.padding(top = 12.dp))
-                }
-            }
-            item { NewAppsCard(state.newApps, onNewAppsChange) }
-            item { EmbeddedBrowsersCard(state.embedded, state.detectedWebViewApps, onEmbeddedChange) }
-            item {
-                SwitchCard(
-                    title = "Cerrar ventanas flotantes",
-                    subtitle = "Al bloquear una app, intenta cerrar también su ventana de imagen en imagen. Depende del teléfono y puede no funcionar.",
-                    checked = state.foldFloating,
-                    onCheckedChange = onFoldFloatingChange,
-                )
-            }
+        },
+    )
+}
+
+/** Lo que falta o «Todo en orden»; si faltan permisos, un toque los abre. */
+@Composable
+private fun PermissionsHero(missing: Int, onOpenPermissions: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    if (missing > 0) {
+        FgHero(
+            if (missing == 1) "Falta 1 permiso" else "Faltan $missing permisos",
+            body = "Sin ellos FocusGuard no puede bloquear nada.", pill = "Dar permisos",
+            container = scheme.tertiaryContainer, content = scheme.onTertiaryContainer, onClick = onOpenPermissions,
+        )
+    } else {
+        FgHero("Todo en orden", body = "FocusGuard tiene los permisos que necesita para bloquear.", accent = true)
+    }
+}
+
+@Composable
+private fun UninstallGroups(granted: Boolean, grantUntilMs: Long, onRequestAdminOff: () -> Unit) {
+    GroupStack {
+        FgNote(
+            "Mientras el administrador del dispositivo esté activo, Android no deja desinstalar FocusGuard, y sin el servicio de accesibilidad nada vigila esa pantalla. " +
+                "Desactivar cualquiera de los dos pide permiso: una aprobación, o tu compañero.",
+        )
+        if (granted) {
+            FgNote("Tienes permiso para desactivarlos en los ajustes de Android hasta las ${formatLocal(Instant.ofEpochMilli(grantUntilMs))}.")
+        } else {
+            FgGroup { FgActionRow("Pedir permiso para desactivarlos", onRequestAdminOff) }
         }
     }
 }

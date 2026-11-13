@@ -1,22 +1,19 @@
 package com.focusguard.ui.assessment
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -24,20 +21,20 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.focusguard.data.AssessmentResultEntity
 import com.focusguard.data.SavedResult
 import com.focusguard.decision.Assessment
-import com.focusguard.ui.components.AppCard
-import com.focusguard.ui.components.BrandHero
-import com.focusguard.ui.components.ChipChoices
+import com.focusguard.ui.components.FgActionRow
+import com.focusguard.ui.components.FgGroup
+import com.focusguard.ui.components.FgHero
+import com.focusguard.ui.components.FgNote
 import com.focusguard.ui.components.FgProgress
-import com.focusguard.ui.components.FgTopBar
-import com.focusguard.ui.components.Hint
+import com.focusguard.ui.components.FgRadioGroup
+import com.focusguard.ui.components.FgRow
+import com.focusguard.ui.components.FgScreen
 import com.focusguard.ui.components.PrimaryButton
-import com.focusguard.ui.components.SecondaryButton
-import com.focusguard.ui.components.SectionTitle
-import com.focusguard.ui.components.StatusChip
-import com.focusguard.ui.components.ValueRow
+import com.focusguard.ui.components.SubPageHost
 import com.focusguard.ui.components.rememberMessageSnackbar
 import com.focusguard.ui.formatLocal
 import com.focusguard.ui.icons.FgIcons
+import com.focusguard.ui.profiles.BottomAction
 import java.time.Instant
 
 class AssessmentActions(
@@ -50,53 +47,62 @@ class AssessmentActions(
     val openUrge: () -> Unit,
 )
 
+private const val TITLE = "Test de adicción"
+
 @Composable
 fun AssessmentScreen(viewModel: AssessmentViewModel, onBack: () -> Unit, onProgram: () -> Unit, onUrge: () -> Unit) {
     val history by viewModel.history.collectAsStateWithLifecycle()
     val signedIn by viewModel.signedIn.collectAsStateWithLifecycle()
     val snackbar = rememberMessageSnackbar(viewModel.message, viewModel::clearMessage)
     val actions = AssessmentActions(viewModel::answer, viewModel::finish, viewModel::upload, viewModel::again, viewModel::clearHistory, onProgram, onUrge)
-    Scaffold(topBar = { FgTopBar("Test de adicción", onBack = onBack) }, snackbarHost = { SnackbarHost(snackbar) }) { padding ->
-        val saved = viewModel.result
-        if (saved == null) {
-            AssessmentQuestions(viewModel.answers, viewModel.busy, actions, Modifier.padding(padding))
-        } else {
-            AssessmentResult(saved, history, signedIn, viewModel.busy, actions, Modifier.padding(padding))
-        }
+    val saved = viewModel.result
+    if (saved == null) {
+        AssessmentQuestions(viewModel.answers, viewModel.busy, actions, onBack = onBack, snackbar = snackbar)
+    } else {
+        AssessmentResult(saved, history, signedIn, viewModel.busy, actions, onBack = onBack, snackbar = snackbar)
     }
 }
 
 @Composable
-internal fun AssessmentQuestions(answers: List<Int?>, busy: Boolean, actions: AssessmentActions, modifier: Modifier = Modifier) {
+internal fun AssessmentQuestions(
+    answers: List<Int?>,
+    busy: Boolean,
+    actions: AssessmentActions,
+    modifier: Modifier = Modifier,
+    onBack: () -> Unit = {},
+    snackbar: SnackbarHostState? = null,
+) {
     val answered = answers.count { it != null }
-    LazyColumn(modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    FgScreen(
+        TITLE, modifier, onBack = onBack, snackbar = snackbar,
+        bottomBar = {
+            BottomAction { PrimaryButton("Ver mi resultado", actions.finish, Modifier.fillMaxWidth(), enabled = answered == Assessment.QUESTIONS.size && !busy) }
+        },
+    ) {
         item {
-            BrandHero(
+            FgHero(
                 "Diez preguntas sobre el último mes",
-                "Contesta con sinceridad: nadie más ve tus respuestas. ${Assessment.DISCLAIMER}",
-                icon = FgIcons.Chart,
+                body = "Contesta con sinceridad: nadie más ve tus respuestas. ${Assessment.DISCLAIMER}",
+                pill = "$answered de ${Assessment.QUESTIONS.size} contestadas",
+                extra = { FgProgress({ answered.toFloat() / Assessment.QUESTIONS.size }, Modifier.fillMaxWidth().padding(top = 8.dp)) },
             )
         }
-        item {
-            AppCard {
-                Text("$answered de ${Assessment.QUESTIONS.size} contestadas", style = MaterialTheme.typography.titleMedium)
-                FgProgress({ answered.toFloat() / Assessment.QUESTIONS.size }, Modifier.fillMaxWidth().padding(top = 8.dp))
+        Assessment.QUESTIONS.forEachIndexed { index, question ->
+            item(key = "q$index") {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text("${index + 1}. $question", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(horizontal = 16.dp))
+                    FgRadioGroup(
+                        options = Assessment.OPTIONS.mapIndexed { value, label -> Triple<Int?, String, String?>(value, label, null) },
+                        selected = answers[index],
+                        onSelect = { value -> value?.let { actions.answer(index, it) } },
+                    )
+                }
             }
         }
-        itemsIndexed(Assessment.QUESTIONS) { index, question ->
-            AppCard {
-                Text("${index + 1}. $question", style = MaterialTheme.typography.bodyLarge)
-                ChipChoices(
-                    options = Assessment.OPTIONS.mapIndexed { value, label -> value to label },
-                    selected = answers[index] ?: -1,
-                    onSelect = { value -> actions.answer(index, value) },
-                    modifier = Modifier.padding(top = 8.dp),
-                )
-            }
-        }
-        item { PrimaryButton("Ver mi resultado", actions.finish, Modifier.fillMaxWidth(), enabled = answered == Assessment.QUESTIONS.size && !busy) }
     }
 }
+
+private enum class ResultPage(val title: String) { HISTORY("Resultados anteriores") }
 
 @Composable
 internal fun AssessmentResult(
@@ -106,10 +112,13 @@ internal fun AssessmentResult(
     busy: Boolean,
     actions: AssessmentActions,
     modifier: Modifier = Modifier,
+    onBack: () -> Unit = {},
+    snackbar: SnackbarHostState? = null,
 ) {
     val band = Assessment.band(saved.score)
     val uploaded = history.firstOrNull { it.id == saved.id }?.uploaded == true
     var confirmClear by remember { mutableStateOf(false) }
+    var page by rememberSaveable { mutableStateOf<ResultPage?>(null) }
     if (confirmClear) {
         AlertDialog(
             onDismissRequest = { confirmClear = false },
@@ -119,46 +128,55 @@ internal fun AssessmentResult(
             dismissButton = { TextButton(onClick = { confirmClear = false }) { Text("Cancelar") } },
         )
     }
-    LazyColumn(modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        item {
-            AppCard {
-                SectionTitle("Tu resultado", FgIcons.Chart)
-                Text("${saved.score} de ${Assessment.MAX_SCORE}", style = MaterialTheme.typography.displaySmall, color = MaterialTheme.colorScheme.primary)
-                StatusChip("Nivel ${band.label.lowercase()}")
-                Text(band.advice, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 8.dp))
-                Assessment.comparison(saved.previous, saved.score)?.let { Hint(it) }
-                Hint(Assessment.DISCLAIMER)
-            }
-        }
-        item {
-            AppCard {
-                SectionTitle("¿Y ahora?", FgIcons.Leaf)
-                PrimaryButton("Programa de recuperación", actions.openProgram, Modifier.fillMaxWidth().padding(top = 8.dp))
-                SecondaryButton("Tengo un impulso ahora", actions.openUrge, Modifier.fillMaxWidth().padding(top = 8.dp))
-            }
-        }
-        item {
-            AppCard {
-                SectionTitle("En tu cuenta", FgIcons.Shield)
-                when {
-                    uploaded -> StatusChip("Guardado en tu cuenta")
-                    signedIn -> {
-                        Hint("Si quieres, guarda la puntuación en tu cuenta. Solo la puntuación y la fecha: tus respuestas no salen de este teléfono y tu compañero no la ve.")
-                        SecondaryButton("Guardar en mi cuenta", actions.upload, Modifier.fillMaxWidth(), enabled = !busy)
+    SubPageHost(
+        page = page,
+        onBack = { page = null },
+        root = {
+            FgScreen("Tu resultado", modifier, onBack = onBack, snackbar = snackbar) {
+                item {
+                    FgHero(
+                        title = "Nivel ${band.label.lowercase()}",
+                        number = "${saved.score} de ${Assessment.MAX_SCORE}",
+                        body = listOfNotNull(band.advice, Assessment.comparison(saved.previous, saved.score)).joinToString(" "),
+                    )
+                }
+                item { FgNote(Assessment.DISCLAIMER, Modifier.padding(horizontal = 16.dp)) }
+                item {
+                    FgGroup(header = "¿Y ahora?") {
+                        FgRow("Programa de recuperación", icon = FgIcons.Leaf, onClick = actions.openProgram)
+                        FgRow("Tengo un impulso ahora", icon = FgIcons.Wind, onClick = actions.openUrge)
                     }
-                    else -> Hint("Con una cuenta podrías guardar la puntuación en tu servidor. Es opcional: aquí ya queda en este teléfono.")
+                }
+                item {
+                    when {
+                        uploaded -> FgGroup(header = "En tu cuenta") { FgRow("Guardado en tu cuenta") }
+                        signedIn -> FgGroup(
+                            header = "En tu cuenta",
+                            footer = "Si quieres, guarda la puntuación en tu cuenta. Solo la puntuación y la fecha: tus respuestas no salen de este teléfono y tu compañero no la ve.",
+                        ) { FgActionRow("Guardar en mi cuenta", actions.upload, enabled = !busy) }
+                        else -> FgGroup(
+                            header = "En tu cuenta",
+                            footer = "Con una cuenta podrías guardar la puntuación en tu servidor. Es opcional: aquí ya queda en este teléfono.",
+                        ) {}
+                    }
+                }
+                item {
+                    FgGroup {
+                        if (history.size > 1) FgRow(ResultPage.HISTORY.title, value = history.size.toString(), onClick = { page = ResultPage.HISTORY })
+                        FgActionRow("Hacerlo de nuevo", actions.again)
+                        FgActionRow("Borrar mis resultados", { confirmClear = true }, danger = true)
+                    }
                 }
             }
-        }
-        if (history.size > 1) {
-            item {
-                AppCard {
-                    SectionTitle("Tus resultados")
-                    history.forEach { ValueRow(formatLocal(Instant.ofEpochMilli(it.takenMs), withDay = true), "${it.score} de ${Assessment.MAX_SCORE}") }
+        },
+        sub = { p ->
+            FgScreen(p.title, modifier, onBack = { page = null }, snackbar = snackbar) {
+                item {
+                    FgGroup {
+                        history.forEach { FgRow(formatLocal(Instant.ofEpochMilli(it.takenMs), withDay = true), value = "${it.score} de ${Assessment.MAX_SCORE}") }
+                    }
                 }
             }
-        }
-        item { SecondaryButton("Hacerlo de nuevo", actions.again, Modifier.fillMaxWidth()) }
-        item { SecondaryButton("Borrar mis resultados", { confirmClear = true }, Modifier.fillMaxWidth()) }
-    }
+        },
+    )
 }

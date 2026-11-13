@@ -20,6 +20,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -45,68 +46,81 @@ import com.focusguard.model.BlockReason
 import com.focusguard.model.LockPalette
 import com.focusguard.model.LockPalettes
 import com.focusguard.model.LockStyle
-import com.focusguard.ui.components.AppCard
-import com.focusguard.ui.components.Hint
+import com.focusguard.ui.components.FgActionRow
+import com.focusguard.ui.components.FgCell
+import com.focusguard.ui.components.FgGroup
+import com.focusguard.ui.components.FgScreen
+import com.focusguard.ui.components.FgSwitchRow
 import com.focusguard.ui.components.PrimaryButton
-import com.focusguard.ui.components.SecondaryButton
 import com.focusguard.ui.components.RemovableAppRow
-import com.focusguard.ui.components.SectionTitle
-import com.focusguard.ui.components.SwitchRow
 import com.focusguard.ui.profiles.AppPickerDialog
+import com.focusguard.ui.profiles.BottomAction
 import org.koin.compose.koinInject
 
 /** Personalizar la pantalla de bloqueo (M1, M2, M4) con vista previa. Se guarda al pulsar «Guardar». */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun LockStyleCard(saved: LockStyle, onSave: (LockStyle) -> Unit) {
+fun LockStylePage(saved: LockStyle, onSave: (LockStyle) -> Unit, snackbar: SnackbarHostState, onBack: () -> Unit) {
     var draft by remember(saved) { mutableStateOf(saved) }
     var picking by remember { mutableStateOf(false) }
     var pickedApps by remember { mutableStateOf<Set<String>?>(null) }
     val context = LocalContext.current
     val labels = remember(draft.appMessages.keys) { draft.appMessages.keys.associateWith { context.appLabel(it) } }
 
-    AppCard {
-        SectionTitle("Pantalla de bloqueo", FgIcons.Lock)
-        Hint("Así ves el bloqueo cuando algo se cierra. Un mensaje tuyo suele ayudar más que el de siempre.")
-
-        LockPreview(draft)
-
-        MessageField("Mensaje propio (opcional)", draft.message, { draft = draft.copy(message = it) }, Modifier.padding(top = 12.dp))
-        OutlinedTextField(
-            value = draft.emoji,
-            onValueChange = { draft = draft.copy(emoji = it.take(LockStyle.MAX_EMOJI)) },
-            label = { Text("Emoji (opcional)") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-        )
-
-        Text("Color", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 16.dp))
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(top = 8.dp)) {
-            LockPalettes.all.forEach { palette ->
-                PaletteSwatch(palette, palette.id == draft.paletteId) { draft = draft.copy(paletteId = palette.id) }
+    FgScreen(
+        "Pantalla de bloqueo", onBack = onBack, snackbar = snackbar,
+        bottomBar = { BottomAction { PrimaryButton("Guardar", { onSave(draft) }, Modifier.fillMaxWidth(), enabled = draft != saved) } },
+    ) {
+        item {
+            FgGroup(header = "Vista previa", footer = "Así ves el bloqueo cuando algo se cierra. Un mensaje tuyo suele ayudar más que el de siempre.") {
+                FgCell { LockPreview(draft) }
             }
         }
-
-        SwitchRow(
-            title = "Frases motivadoras",
-            subtitle = "Una frase distinta cada vez que se bloquea algo.",
-            checked = draft.rotating,
-            onCheckedChange = { draft = draft.copy(rotating = it) },
-            modifier = Modifier.padding(top = 8.dp),
-        )
-
-        MessageField("Mensaje al intentar apagar o desinstalar la app (opcional)", draft.guardMessage, { draft = draft.copy(guardMessage = it) }, Modifier.padding(top = 16.dp))
-        Hint("Se suma al motivo cuando el modo estricto cierra los ajustes de FocusGuard.")
-
-        Text("Mensaje para una app", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 16.dp))
-        Hint("Por ejemplo, un recordatorio distinto cuando intentas abrir una app en concreto.")
-        draft.appMessages.forEach { (pkg, message) ->
-            val label = labels[pkg] ?: pkg
-            RemovableAppRow(pkg, "$label: $message", "Quitar el mensaje de $label", { draft = draft.copy(appMessages = draft.appMessages - pkg) })
+        item {
+            FgGroup(header = "Mensaje") {
+                FgCell { MessageField("Mensaje propio (opcional)", draft.message, { draft = draft.copy(message = it) }) }
+                FgCell {
+                    OutlinedTextField(
+                        value = draft.emoji,
+                        onValueChange = { draft = draft.copy(emoji = it.take(LockStyle.MAX_EMOJI)) },
+                        label = { Text("Emoji (opcional)") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+                FgSwitchRow(
+                    title = "Frases motivadoras",
+                    subtitle = "Una frase distinta cada vez que se bloquea algo.",
+                    checked = draft.rotating,
+                    onCheckedChange = { draft = draft.copy(rotating = it) },
+                )
+            }
         }
-        SecondaryButton("Añadir mensaje para una app", { picking = true }, Modifier.padding(top = 8.dp))
-
-        PrimaryButton("Guardar", { onSave(draft) }, Modifier.fillMaxWidth().padding(top = 16.dp), enabled = draft != saved)
+        item {
+            FgGroup(header = "Color") {
+                FgCell {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        LockPalettes.all.forEach { palette ->
+                            PaletteSwatch(palette, palette.id == draft.paletteId) { draft = draft.copy(paletteId = palette.id) }
+                        }
+                    }
+                }
+            }
+        }
+        item {
+            FgGroup(header = "Al intentar apagar o desinstalar", footer = "Se suma al motivo cuando el modo estricto cierra los ajustes de FocusGuard.") {
+                FgCell { MessageField("Mensaje al intentar apagar o desinstalar la app (opcional)", draft.guardMessage, { draft = draft.copy(guardMessage = it) }) }
+            }
+        }
+        item {
+            FgGroup(header = "Mensaje para una app", footer = "Por ejemplo, un recordatorio distinto cuando intentas abrir una app en concreto.") {
+                draft.appMessages.forEach { (pkg, message) ->
+                    val label = labels[pkg] ?: pkg
+                    FgCell { RemovableAppRow(pkg, "$label: $message", "Quitar el mensaje de $label", { draft = draft.copy(appMessages = draft.appMessages - pkg) }) }
+                }
+                FgActionRow("Añadir mensaje para una app", { picking = true })
+            }
+        }
     }
 
     if (picking) {
@@ -136,7 +150,6 @@ private fun LockPreview(style: LockStyle) {
         AndroidView(
             factory = { LockScreenView(it, content) {} },
             modifier = Modifier
-                .padding(top = 12.dp)
                 .fillMaxWidth()
                 .heightIn(min = 360.dp)
                 .clip(RoundedCornerShape(16.dp))

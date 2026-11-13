@@ -1,5 +1,17 @@
 # Cambios
 
+## 0.8.0 (2026-11-13)
+
+Interfaz nueva. No cambia ninguna función ni lo que se bloquea: cambia dónde está cada cosa y cómo se ve.
+
+- Aspecto más sobrio: listas agrupadas de filas cortas, sin bordes ni tarjetas dentro de tarjetas, títulos grandes y barra de arriba centrada.
+- Cinco pestañas: Inicio, Perfiles, Progreso, Protección y Ajustes.
+- Inicio queda en lo urgente: el estado de ahora, Bloquear ya, Enfoque, Dormir, Tengo un impulso, lo que está en curso, la racha y Ayúdame.
+- Perfiles tiene su pestaña. Cada perfil es una ficha de filas (apps, webs, categorías, horario, condiciones, límite, pausa, candado) y cada fila abre su propia pantalla.
+- Progreso reúne la racha, las estadísticas, los informes, el diario, el programa de recuperación, el test y los hábitos.
+- Protección reúne modo estricto, aprobaciones, contenido adulto, filtro DNS y detección de imágenes (antes en Ajustes).
+- Ajustes y las demás pantallas largas se reparten en subpantallas: se entra a lo que se busca en vez de desplazarse por una página.
+
 ## 0.7.2 (2026-11-11)
 
 Correcciones de una auditoría general; no cambia ninguna función.

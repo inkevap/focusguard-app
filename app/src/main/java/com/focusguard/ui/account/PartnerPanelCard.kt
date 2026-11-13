@@ -1,77 +1,96 @@
 package com.focusguard.ui.account
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.focusguard.decision.PartnerArea
 import com.focusguard.decision.PartnerChoices
 import com.focusguard.decision.PartnerPanel
 import com.focusguard.model.BlockReason
 import com.focusguard.model.PartnerEventType
 import com.focusguard.model.StrictProtection
-import com.focusguard.ui.components.AppCard
-import com.focusguard.ui.components.CheckRow
 import com.focusguard.ui.components.ChipChoices
-import com.focusguard.ui.components.Hint
-import com.focusguard.ui.components.SectionTitle
+import com.focusguard.ui.components.FgCell
+import com.focusguard.ui.components.FgCheckRow
+import com.focusguard.ui.components.FgGroup
+import com.focusguard.ui.components.FgRow
+import com.focusguard.ui.profiles.GroupStack
+
+/** Las listas de casillas del panel del compañero: cada una es una subpantalla. */
+internal enum class PanelList(val title: String) {
+    NOTICES("Qué se le avisa"),
+    BLOCKED("De lo bloqueado, de qué"),
+    AREAS("Qué cambios aprueba él"),
+    SCREENS("Qué pantallas se cierran"),
+}
+
+private fun PartnerPanel.choices(parental: Boolean) = if (parental) this.parental else watch
 
 /**
  * Qué se le avisa a tu compañero y qué se protege con él, sin necesitar el modo estricto. Se elige aparte para «Avisarle lo que pasa» y para el
  * modo parental; vale el del modo que esté en uso. Añadir es libre; quitar un aviso o una protección lo tiene que aprobar el compañero.
+ * Esta es la raíz: elige el modo y abre cada lista.
  */
 @Composable
-internal fun PartnerPanelCard(panel: PartnerPanel, parentalOn: Boolean, profiles: List<Pair<Long, String>>, onChange: (PartnerPanel) -> Unit) {
-    var parentalTab by rememberSaveable { mutableStateOf(parentalOn) }
-    val shown = if (parentalTab) panel.parental else panel.watch
-    fun update(choices: PartnerChoices) = onChange(if (parentalTab) panel.copy(parental = choices) else panel.copy(watch = choices))
-
-    AppCard {
-        SectionTitle("Qué se le avisa y qué se protege")
-        Hint(
-            "Elige qué le llega a tu compañero y qué protecciones valen mientras tengas uno, sin activar el modo estricto. " +
-                "Poner más es libre; quitar algo lo tiene que aprobar él.",
-        )
-        ChipChoices(
-            options = listOf(false to "Avisarle lo que pasa", true to "Modo parental"),
-            selected = parentalTab,
-            onSelect = { parentalTab = it },
-            modifier = Modifier.padding(top = 8.dp),
-        )
-        Hint(if (parentalTab == parentalOn) "Es el modo que está en uso ahora." else "No es el modo en uso: se aplicará cuando lo uses.")
-
-        SectionTitle("Qué se le avisa")
-        PartnerPanel.NOTICE_TYPES.forEach { type ->
-            CheckRow(noticeLabel(type), null, type !in shown.noticesOff, { on -> update(shown.copy(noticesOff = if (on) shown.noticesOff - type else shown.noticesOff + type)) })
-        }
-
-        SectionTitle("De lo bloqueado, de qué se le avisa")
-        Hint("Solo cuenta si está encendido «Cada vez que intento abrir algo bloqueado». Elige por clase de cosa y por perfil.")
-        PartnerPanel.BLOCK_REASONS.forEach { reason ->
-            CheckRow(reasonLabel(reason), null, reason !in shown.blockedReasonsOff, { on -> update(shown.copy(blockedReasonsOff = if (on) shown.blockedReasonsOff - reason else shown.blockedReasonsOff + reason)) })
-        }
-        if (profiles.isNotEmpty()) {
-            Hint("Por perfil:")
-            profiles.forEach { (id, name) ->
-                CheckRow(name, null, id !in shown.blockedProfilesOff, { on -> update(shown.copy(blockedProfilesOff = if (on) shown.blockedProfilesOff - id else shown.blockedProfilesOff + id)) })
+internal fun PartnerPanelRoot(panel: PartnerPanel, parentalOn: Boolean, parentalTab: Boolean, onTab: (Boolean) -> Unit, onOpen: (PanelList) -> Unit) {
+    val shown = panel.choices(parentalTab)
+    val blockedOn = PartnerPanel.BLOCK_REASONS.count { it !in shown.blockedReasonsOff }
+    GroupStack {
+        FgGroup(
+            footer = "Elige qué le llega a tu compañero y qué protecciones valen mientras tengas uno, sin activar el modo estricto. " +
+                "Poner más es libre; quitar algo lo tiene que aprobar él. " +
+                if (parentalTab == parentalOn) "Es el modo que está en uso ahora." else "No es el modo en uso: se aplicará cuando lo uses.",
+        ) {
+            FgCell {
+                ChipChoices(options = listOf(false to "Avisarle lo que pasa", true to "Modo parental"), selected = parentalTab, onSelect = onTab)
             }
         }
-
-        SectionTitle("Qué cambios aprueba él")
-        Hint("Cambiar o aflojar cada una de estas funciones pasa siempre por tu compañero, aunque no esté el modo estricto.")
-        PartnerArea.entries.forEach { area ->
-            val (title, hint) = areaText(area)
-            CheckRow(title, hint, area in shown.areas, { on -> update(shown.copy(areas = if (on) shown.areas + area else shown.areas - area)) })
+        FgGroup {
+            FgRow(PanelList.NOTICES.title, value = "${PartnerPanel.NOTICE_TYPES.count { it !in shown.noticesOff }} de ${PartnerPanel.NOTICE_TYPES.size}", onClick = { onOpen(PanelList.NOTICES) })
+            FgRow(PanelList.BLOCKED.title, value = "$blockedOn de ${PartnerPanel.BLOCK_REASONS.size}", onClick = { onOpen(PanelList.BLOCKED) })
+            FgRow(PanelList.AREAS.title, value = "${shown.areas.size} de ${PartnerArea.entries.size}", onClick = { onOpen(PanelList.AREAS) })
+            FgRow(PanelList.SCREENS.title, value = "${shown.protections.size} de ${PartnerPanel.PROTECTIONS.size}", onClick = { onOpen(PanelList.SCREENS) })
         }
+    }
+}
 
-        SectionTitle("Qué pantallas se cierran con tu compañero")
-        PartnerPanel.PROTECTIONS.forEach { protection ->
-            val (title, hint) = protectionText(protection)
-            CheckRow(title, hint, protection in shown.protections, { on -> update(shown.copy(protections = if (on) shown.protections + protection else shown.protections - protection)) })
+/** Una de las listas de casillas del panel, para el modo [parentalTab]. */
+@Composable
+internal fun PartnerPanelList(list: PanelList, panel: PartnerPanel, parentalTab: Boolean, profiles: List<Pair<Long, String>>, onChange: (PartnerPanel) -> Unit) {
+    val shown = panel.choices(parentalTab)
+    fun update(choices: PartnerChoices) = onChange(if (parentalTab) panel.copy(parental = choices) else panel.copy(watch = choices))
+
+    GroupStack {
+        when (list) {
+            PanelList.NOTICES -> FgGroup {
+                PartnerPanel.NOTICE_TYPES.forEach { type ->
+                    FgCheckRow(noticeLabel(type), type !in shown.noticesOff, { on -> update(shown.copy(noticesOff = if (on) shown.noticesOff - type else shown.noticesOff + type)) })
+                }
+            }
+            PanelList.BLOCKED -> {
+                FgGroup(footer = "Solo cuenta si está encendido «Cada vez que intento abrir algo bloqueado». Elige por clase de cosa y por perfil.") {
+                    PartnerPanel.BLOCK_REASONS.forEach { reason ->
+                        FgCheckRow(reasonLabel(reason), reason !in shown.blockedReasonsOff, { on -> update(shown.copy(blockedReasonsOff = if (on) shown.blockedReasonsOff - reason else shown.blockedReasonsOff + reason)) })
+                    }
+                }
+                if (profiles.isNotEmpty()) {
+                    FgGroup(header = "Por perfil") {
+                        profiles.forEach { (id, name) ->
+                            FgCheckRow(name, id !in shown.blockedProfilesOff, { on -> update(shown.copy(blockedProfilesOff = if (on) shown.blockedProfilesOff - id else shown.blockedProfilesOff + id)) })
+                        }
+                    }
+                }
+            }
+            PanelList.AREAS -> FgGroup(footer = "Cambiar o aflojar cada una de estas funciones pasa siempre por tu compañero, aunque no esté el modo estricto.") {
+                PartnerArea.entries.forEach { area ->
+                    val (title, hint) = areaText(area)
+                    FgCheckRow(title, area in shown.areas, { on -> update(shown.copy(areas = if (on) shown.areas + area else shown.areas - area)) }, subtitle = hint)
+                }
+            }
+            PanelList.SCREENS -> FgGroup {
+                PartnerPanel.PROTECTIONS.forEach { protection ->
+                    val (title, hint) = protectionText(protection)
+                    FgCheckRow(title, protection in shown.protections, { on -> update(shown.copy(protections = if (on) shown.protections + protection else shown.protections - protection)) }, subtitle = hint)
+                }
+            }
         }
     }
 }
