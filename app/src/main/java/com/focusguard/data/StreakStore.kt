@@ -1,5 +1,6 @@
 package com.focusguard.data
 
+import com.focusguard.diagnostics.Faults
 import android.content.Context
 import android.util.Log
 import androidx.room.Dao
@@ -83,7 +84,7 @@ class StreakStore(context: Context, private val dao: DayRecordDao, private val s
     } catch (e: CancellationException) {
         throw e
     } catch (e: Exception) {
-        Log.w(TAG, "No se pudo guardar el dato de la racha", e)
+        Faults.record("racha", "no se pudo guardar el dato de la racha", e)
         false
     }
 

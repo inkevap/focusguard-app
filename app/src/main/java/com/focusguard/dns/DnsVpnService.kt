@@ -9,6 +9,7 @@ import android.os.ParcelFileDescriptor
 import com.focusguard.data.DnsQueryLog
 import com.focusguard.data.PartnerEventOutbox
 import com.focusguard.data.SettingsRepository
+import com.focusguard.diagnostics.Faults
 import com.focusguard.data.TrustedClock
 import com.focusguard.model.PartnerEventType
 import com.focusguard.server.DnsConfig
@@ -54,7 +55,7 @@ class DnsVpnService : VpnService(), KoinComponent {
     private val queryLog: DnsQueryLog by inject()
 
     // Una consulta que falla de forma inesperada no puede tirar la app: se pierde esa consulta y la aplicación reintenta.
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + CoroutineExceptionHandler { _, _ -> })
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + CoroutineExceptionHandler { _, e -> Faults.record(SOURCE_FAULTS, "fallo inesperado en el filtro DNS", e) })
 
     /** La sesión en marcha: montar el túnel y servirlo. Cancelarla lo cierra todo. */
     private var session: Job? = null
@@ -86,8 +87,10 @@ class DnsVpnService : VpnService(), KoinComponent {
         val established = try {
             build().establish()
         } catch (e: IllegalStateException) {
+            Faults.record(SOURCE_FAULTS, "no se pudo montar la VPN", e)
             null
         } catch (e: SecurityException) {
+            Faults.record(SOURCE_FAULTS, "no se pudo montar la VPN", e)
             null
         }
         if (established == null) {
@@ -165,6 +168,7 @@ class DnsVpnService : VpnService(), KoinComponent {
                         throw e
                     } catch (e: Exception) {
                         // Algo inesperado en esta consulta: se pierde ella sola.
+                        Faults.record(SOURCE_FAULTS, "fallo al contestar una consulta DNS", e)
                     } finally {
                         inFlight.release()
                     }
@@ -264,6 +268,7 @@ class DnsVpnService : VpnService(), KoinComponent {
     }
 
     companion object {
+        private const val SOURCE_FAULTS = "filtro DNS"
         /** Cada cuánto se vuelca el historial de consultas al disco. */
         private const val LOG_FLUSH_MS = 30_000L
 

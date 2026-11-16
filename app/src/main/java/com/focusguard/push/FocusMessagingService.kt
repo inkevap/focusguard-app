@@ -1,5 +1,6 @@
 package com.focusguard.push
 
+import com.focusguard.diagnostics.Faults
 import android.util.Log
 import com.focusguard.data.AccountRepository
 import com.google.firebase.messaging.FirebaseMessagingService
@@ -38,7 +39,7 @@ class FocusMessagingService : FirebaseMessagingService(), KoinComponent {
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.w(TAG, "No se pudo procesar el $what de push", e)
+                Faults.record("avisos push", "no se pudo procesar el $what de push", e)
             }
         }
         runCatching { runBlocking { withTimeoutOrNull(HANDLE_MS) { job.join() } ?: job.cancel() } }

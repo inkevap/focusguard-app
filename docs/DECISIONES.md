@@ -256,3 +256,10 @@ Registro de decisiones del proyecto. Añade una entrada por cada una: fecha, dec
 - **Subpantallas dentro de la misma pantalla** (`SubPageHost`) y no como rutas de navegación: así la raíz y sus subpantallas comparten ViewModel y borrador, y guardar sigue siendo una sola acción. Las rutas externas (icono, panel rápido, widget) no cambian.
 - **Detección de imágenes** se mueve de Ajustes a Protección, junto a los demás filtros.
 - La maqueta navegable que aprobó el usuario queda en `docs/maqueta-rediseno.html`.
+
+## Registro de fallos (2026-11-16)
+
+- **Por qué**: la detección de imágenes se quedó parada sin avisar y el registro del sistema solo guarda unos minutos, así que no hubo forma de saber la causa. Ahora la app guarda sus propios fallos en el teléfono (`diagnostics/Faults.kt`, lógica pura en `FaultLog`).
+- **Qué se apunta**: lo que antes iba a `Log.w` o se tragaba en silencio (bucle de capturas, modelos, ciclo de uso del servicio, plan B de la pantalla de bloqueo, filtro DNS, push, widgets, racha), cuándo se detiene el servicio de bloqueo y los fallos que cierran la app (manejador global, guardado al momento). Los `runCatching` que solo leen datos con valor por defecto no cuentan como fallo.
+- **Cuánto**: los 60 más recientes; un fallo repetido suma a su línea en vez de ocupar una nueva. Tipo de error, mensaje y las tres primeras líneas de la traza de la app (no hay ofuscación, se leen tal cual).
+- **Privacidad**: no sale del teléfono; el usuario puede copiarlo desde Ajustes > Registro de fallos. No guarda texto de pantalla ni imágenes.

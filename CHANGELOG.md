@@ -1,5 +1,9 @@
 # Cambios
 
+## 0.8.2 (2026-11-16)
+
+- Registro de fallos en Ajustes: lo que falla dentro de la app (detección de imágenes, servicio de bloqueo, filtro DNS, avisos, widgets, racha), cuándo se detiene el servicio de bloqueo y los fallos que cierran la app. Se guarda en el teléfono aunque pasen días (los 60 más recientes), no se envía a ningún sitio y se puede copiar o borrar.
+
 ## 0.8.1 (2026-11-16)
 
 Corrección de la detección de imágenes; no cambia ninguna función.

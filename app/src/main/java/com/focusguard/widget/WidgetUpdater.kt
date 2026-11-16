@@ -1,5 +1,6 @@
 package com.focusguard.widget
 
+import com.focusguard.diagnostics.Faults
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
@@ -52,7 +53,7 @@ object WidgetUpdater {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            Log.w(TAG, "No se pudieron pintar los widgets", e)
+            Faults.record("widgets", "no se pudieron pintar los widgets", e)
         }
     }
 

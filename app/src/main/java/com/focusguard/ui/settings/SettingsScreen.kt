@@ -21,6 +21,7 @@ import com.focusguard.data.PartnerState
 import com.focusguard.decision.NoticeSettings
 import com.focusguard.decision.NotificationSettings
 import com.focusguard.decision.StatsSettings
+import com.focusguard.diagnostics.Faults
 import com.focusguard.ui.components.FgActionRow
 import com.focusguard.ui.components.FgCell
 import com.focusguard.ui.components.FgGroup
@@ -48,6 +49,7 @@ private enum class SettingsPage(val title: String) {
     DAY_START("Inicio del día"),
     STATS("Estadísticas de navegación"),
     FILE("Copia en un archivo"),
+    FAULTS("Registro de fallos"),
 }
 
 @Composable
@@ -66,6 +68,7 @@ fun SettingsScreen(
     val notices by viewModel.notices.collectAsStateWithLifecycle()
     val stats by viewModel.stats.collectAsStateWithLifecycle()
     val notifications by viewModel.notifications.collectAsStateWithLifecycle()
+    val faults by Faults.log.collectAsStateWithLifecycle()
     // Solo para el resumen de la raíz: la cuenta y el compañero se gestionan en su pantalla.
     val account by koinInject<AccountRepository>().state.collectAsStateWithLifecycle()
     val partner by koinInject<PartnerRepository>().state.collectAsStateWithLifecycle()
@@ -133,6 +136,7 @@ fun SettingsScreen(
                 item {
                     FgGroup {
                         FgRow("Ayuda", icon = FgIcons.Lifebuoy, onClick = onOpenHelp)
+                        FgRow("Registro de fallos", icon = FgIcons.Info, value = if (faults.isEmpty()) "Ninguno" else "${faults.size}", onClick = { page = SettingsPage.FAULTS })
                         FgActionRow(
                             "Repetir la bienvenida", viewModel::restartOnboarding,
                             subtitle = "Vuelve a elegir qué cuidar y cuándo, y a repasar los permisos.",
@@ -184,6 +188,10 @@ private fun SettingsSubPage(
                     SettingsPage.ICON -> AppIconContent(viewModel.launcherIcon, viewModel::changeLauncherIcon)
                     SettingsPage.STATS -> StatsCard(stats, viewModel::setStats, viewModel::clearWebStats)
                     SettingsPage.FILE -> FileGroups(onExport, onImport)
+                    SettingsPage.FAULTS -> {
+                        val faults by Faults.log.collectAsStateWithLifecycle()
+                        FaultLogContent(faults, Faults::clear)
+                    }
                     else -> Unit
                 }
             }

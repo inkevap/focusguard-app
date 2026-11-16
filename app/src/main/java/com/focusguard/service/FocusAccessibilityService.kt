@@ -36,6 +36,7 @@ import com.focusguard.data.NoticeLedger
 import com.focusguard.data.WrongBlockReporter
 import com.focusguard.data.PartnerEventOutbox
 import com.focusguard.decision.AdultGate
+import com.focusguard.diagnostics.Faults
 import com.focusguard.decision.AdultTextExemptions
 import com.focusguard.decision.WrongBlockReports
 import com.focusguard.decision.WrongBlockReport
@@ -486,7 +487,10 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
 
     override fun onDestroy() {
         // Si lo apagó el usuario (y no es un reinicio del servicio por una actualización), el compañero lo sabe.
-        if (!permissionChecker.isGranted(Permission.ACCESSIBILITY)) partnerEvents.record(PartnerEventType.PROTECTION_OFF, "accesibilidad")
+        val granted = permissionChecker.isGranted(Permission.ACCESSIBILITY)
+        if (!granted) partnerEvents.record(PartnerEventType.PROTECTION_OFF, "accesibilidad")
+        // Mientras está detenido no se bloquea ni se detectan imágenes: queda apuntado para saber cuándo pasó.
+        Faults.record(SOURCE_FAULTS, if (granted) "el servicio de bloqueo se detuvo (el permiso sigue dado)" else "el servicio de bloqueo se detuvo: se quitó el permiso de accesibilidad")
         health.clear()
         blockGate.clear()
         handler.removeCallbacksAndMessages(null)
@@ -715,6 +719,7 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
             handler.postDelayed(removeOverlayRunnable, OVERLAY_SAFETY_MS)
         } catch (e: RuntimeException) {
             // Plan B: actividad propia con el mismo contenido.
+            Faults.record(SOURCE_FAULTS, "no se pudo mostrar la pantalla de bloqueo encima: se abre aparte", e)
             startActivity(LockActivity.intent(this, decision, name, showEmergency))
         }
     }
@@ -773,7 +778,7 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.w("FocusGuard", "Fallo en el ciclo de uso", e)
+                Faults.record(SOURCE_FAULTS, "fallo en el ciclo de uso", e)
             }
         }
     }
@@ -1081,6 +1086,7 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
     }
 
     private companion object {
+        const val SOURCE_FAULTS = "servicio de bloqueo"
         const val POLL_INTERVAL_MS = 300L
         const val MAX_NODES = 300
         const val TRACK_INTERVAL_MS = 1_000L

@@ -3,6 +3,7 @@ package com.focusguard
 import android.app.Application
 import com.focusguard.data.AdultFilterProvider
 import com.focusguard.di.appModule
+import com.focusguard.diagnostics.Faults
 import com.focusguard.dns.DnsFilter
 import com.focusguard.service.PartnerSync
 import com.focusguard.widget.WidgetUpdater
@@ -16,6 +17,8 @@ import org.koin.core.context.startKoin
 class FocusGuardApp : Application() {
     override fun onCreate() {
         super.onCreate()
+        // Lo primero: así queda apuntado cualquier fallo, también uno al arrancar.
+        Faults.install(this)
         startKoin {
             androidContext(this@FocusGuardApp)
             modules(appModule)

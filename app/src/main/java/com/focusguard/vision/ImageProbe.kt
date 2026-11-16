@@ -27,6 +27,7 @@ import com.focusguard.decision.ImageTier
 import com.focusguard.decision.ImageVigilance
 import com.focusguard.decision.NudeNetOutput
 import com.focusguard.decision.VigilanceSettings
+import com.focusguard.diagnostics.Faults
 import kotlin.coroutines.resume
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CancellationException
@@ -140,7 +141,7 @@ class ImageProbe(
             delay(WATCHDOG_EVERY_MS)
             val stale = SystemClock.elapsedRealtime() - lastTickAt
             if (job?.isActive != true || stale > STALL_MS) {
-                Log.w(TAG, "el bucle de capturas estaba parado (${stale / 1000} s sin dar una vuelta, activo=${job?.isActive}): se relanza")
+                Faults.record(SOURCE, "el bucle de capturas estaba parado (${stale / 1000} s sin dar una vuelta, activo=${job?.isActive}): se relanza")
                 job?.cancel()
                 launchLoop()
             }
@@ -159,7 +160,7 @@ class ImageProbe(
                 throw e
             } catch (e: Exception) {
                 // Un fallo en una vuelta no debe parar la detección: se apunta y se sigue en la siguiente.
-                Log.w(TAG, "fallo en una vuelta del bucle de capturas", e)
+                Faults.record(SOURCE, "fallo en una vuelta del bucle de capturas", e)
             }
             delay(TICK_MS)
         }
@@ -233,7 +234,7 @@ class ImageProbe(
         val shot = withTimeoutOrNull(CAPTURE_TIMEOUT_MS) { take() } ?: Shot.Failed(TIMEOUT_CODE)
         if (shot !is Shot.Ok) {
             val code = (shot as? Shot.Failed)?.code
-            Log.w(TAG, "captura fallida: código=$code")
+            Faults.record(SOURCE, if (code == TIMEOUT_CODE) "la captura de pantalla no respondió en ${CAPTURE_TIMEOUT_MS / 1000} s" else "captura fallida: código=$code")
             stats.failed(SystemClock.elapsedRealtime() - startedAt, code)
             return Outcome(null, fresh = false)
         }
@@ -356,6 +357,7 @@ class ImageProbe(
 
     companion object {
         private const val TAG = "FGimg"
+        private const val SOURCE = "imágenes"
         private const val FIRST_WAIT_MS = 5_000L
         // El mínimo entre capturas es de 1 s: mirar solo cada 2 s lo dejaría en 2 s, así que se mira cada medio segundo.
         private const val TICK_MS = 500L

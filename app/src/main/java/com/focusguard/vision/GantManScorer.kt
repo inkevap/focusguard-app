@@ -6,6 +6,7 @@ import android.util.Log
 import com.focusguard.decision.GantManOutput
 import com.focusguard.decision.ImageWeights
 import com.focusguard.decision.ModelSpec
+import com.focusguard.diagnostics.Faults
 import java.io.FileInputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -51,7 +52,7 @@ class GantManScorer(private val context: Context) : AutoCloseable {
         return runCatching {
             model.run(input, output)
             output[0].map { it.toDouble() }.takeIf { GantManOutput.explicitProbability(it) != null }
-        }.onFailure { Log.w(TAG, "no se pudo puntuar: ${it.message}") }.getOrNull()
+        }.onFailure { Faults.record("imágenes", "GantMan no pudo puntuar", it) }.getOrNull()
     }
 
     private fun load(): Interpreter? = runCatching {
@@ -64,13 +65,13 @@ class GantManScorer(private val context: Context) : AutoCloseable {
             val type = model.getInputTensor(0).dataType()
             val outShape = model.getOutputTensor(0).shape().toList()
             if (shape != listOf(1, SIZE, SIZE, 3) || type != DataType.FLOAT32 || outShape != listOf(1, GantManOutput.CLASS_COUNT)) {
-                Log.w(TAG, "modelo inesperado: entrada $shape $type, salida $outShape")
+                Faults.record("imágenes", "GantMan: modelo inesperado: entrada $shape $type, salida $outShape")
                 model.close()
                 return@runCatching null
             }
             interpreter = model
         }
-    }.onFailure { Log.w(TAG, "no se pudo cargar el modelo: ${it.message}") }.getOrNull()
+    }.onFailure { Faults.record("imágenes", "GantMan no pudo cargar el modelo", it) }.getOrNull()
 
     @Synchronized
     override fun close() {

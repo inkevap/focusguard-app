@@ -6,6 +6,7 @@ import android.util.Log
 import com.focusguard.decision.ImageWeights
 import com.focusguard.decision.ModelSpec
 import com.focusguard.decision.NudeNetOutput
+import com.focusguard.diagnostics.Faults
 import java.io.FileInputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -51,7 +52,7 @@ class NudeNetScorer(private val context: Context) : AutoCloseable {
                 for (v in output[0][BOX_VALUES + c]) if (v > best) best = v
                 best.coerceIn(0f, 1f).toDouble()
             }.takeIf { NudeNetOutput.explicitProbability(it) != null }
-        }.onFailure { Log.w(TAG, "no se pudo puntuar: ${it.message}") }.getOrNull()
+        }.onFailure { Faults.record("imágenes", "NudeNet no pudo puntuar", it) }.getOrNull()
     }
 
     private fun load(): Interpreter? = runCatching {
@@ -64,13 +65,13 @@ class NudeNetScorer(private val context: Context) : AutoCloseable {
             val type = model.getInputTensor(0).dataType()
             val outShape = model.getOutputTensor(0).shape().toList()
             if (shape != listOf(1, 3, SIZE, SIZE) || type != DataType.FLOAT32 || outShape != listOf(1, ROWS, POSITIONS)) {
-                Log.w(TAG, "modelo inesperado: entrada $shape $type, salida $outShape")
+                Faults.record("imágenes", "NudeNet: modelo inesperado: entrada $shape $type, salida $outShape")
                 model.close()
                 return@runCatching null
             }
             interpreter = model
         }
-    }.onFailure { Log.w(TAG, "no se pudo cargar el modelo: ${it.message}") }.getOrNull()
+    }.onFailure { Faults.record("imágenes", "NudeNet no pudo cargar el modelo", it) }.getOrNull()
 
     @Synchronized
     override fun close() {
