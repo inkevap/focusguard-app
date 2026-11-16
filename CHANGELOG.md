@@ -1,5 +1,12 @@
 # Cambios
 
+## 0.8.1 (2026-11-16)
+
+Corrección de la detección de imágenes; no cambia ninguna función.
+
+- La detección de imágenes podía quedarse parada sin avisar, con el interruptor encendido, hasta volver a abrir la app. Ahora una captura que el sistema no entrega se da por fallida a los 5 s, un fallo suelto no para la detección y, si pasa 30 s sin avanzar, se vuelve a poner en marcha sola.
+- El registro del sistema (`FGimg`) apunta también las capturas saltadas, las fallidas y cada vez que se vuelve a poner en marcha.
+
 ## 0.8.0 (2026-11-13)
 
 Interfaz nueva. No cambia ninguna función ni lo que se bloquea: cambia dónde está cada cosa y cómo se ve.

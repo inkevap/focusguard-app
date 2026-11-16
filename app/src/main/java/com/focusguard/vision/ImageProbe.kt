@@ -29,6 +29,7 @@ import com.focusguard.decision.NudeNetOutput
 import com.focusguard.decision.VigilanceSettings
 import kotlin.coroutines.resume
 import kotlin.math.roundToInt
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -37,6 +38,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 
 /** Lo que la detección guarda para que sobreviva a un reinicio: cuándo hubo incidentes y hasta cuándo dura la vigilancia (con la hora del reloj). */
 interface ImageHistory {
@@ -82,6 +84,9 @@ class ImageProbe(
     private val scheduler = CaptureScheduler(CaptureTiming())
     private val vigilance = ImageVigilance()
     private var job: Job? = null
+    private var watchdog: Job? = null
+    /** Cuándo dio el bucle su última vuelta: si deja de avanzar, el vigilante lo relanza. */
+    @Volatile private var lastTickAt = 0L
     private var lastHash: Int? = null
     private var lastResult: ImageAssessment? = null
     private var responder = ImageResponder()
@@ -100,10 +105,13 @@ class ImageProbe(
         incidents = history.incidents()
         val left = history.vigilanceUntilMs() - wallNow()
         if (left > 0) vigilance.restore(SystemClock.elapsedRealtime() + left)
-        job = scope.launch { loop() }
+        launchLoop()
+        if (watchdog?.isActive != true) watchdog = scope.launch { watch() }
     }
 
     fun stop() {
+        watchdog?.cancel()
+        watchdog = null
         job?.cancel()
         job = null
         gantman.close()
@@ -118,31 +126,64 @@ class ImageProbe(
      * Cada [TICK_MS] mira qué hay en pantalla y, si ya pasó el tiempo que toca a esa app o web (más largo en un navegador, más corto en redes y vídeo, más largo
      * cuanto más seguras salen sus capturas y más corto durante la vigilancia), captura. El tiempo se pregunta de nuevo en cada vuelta: cambiar de app lo cambia al momento.
      */
+    private fun launchLoop() {
+        lastTickAt = SystemClock.elapsedRealtime() + FIRST_WAIT_MS
+        job = scope.launch { loop() }
+    }
+
+    /**
+     * Si el bucle muere o se queda parado (una captura que nunca responde, un fallo suelto), la detección se apagaría sin avisar con el interruptor encendido.
+     * Cada [WATCHDOG_EVERY_MS] se comprueba que dio una vuelta hace poco; si no, se relanza.
+     */
+    private suspend fun watch() {
+        while (scope.isActive) {
+            delay(WATCHDOG_EVERY_MS)
+            val stale = SystemClock.elapsedRealtime() - lastTickAt
+            if (job?.isActive != true || stale > STALL_MS) {
+                Log.w(TAG, "el bucle de capturas estaba parado (${stale / 1000} s sin dar una vuelta, activo=${job?.isActive}): se relanza")
+                job?.cancel()
+                launchLoop()
+            }
+        }
+    }
+
     private suspend fun loop() {
         val power = service.getSystemService(PowerManager::class.java)
         delay(FIRST_WAIT_MS)
         var lastAt = SystemClock.elapsedRealtime() - NEVER_MS
         while (scope.isActive) {
-            val now = target() ?: CaptureTarget(UNKNOWN_KEY, CaptureRisk.NORMAL)
-            val settings = vigilanceSettings()
-            val tick = SystemClock.elapsedRealtime()
-            val level = adaptiveLevel()
-            // El nivel del modo dinámico acorta el tiempo de lo que le toca según el alcance elegido, haya o no vigilancia ahora.
-            val adaptive = if (level > 0 && ImageVigilance.appliesTo(settings, now)) ImageAdaptation.intervalFactor(level) else 1.0
-            val interval = scheduler.intervalMs(now.key, now.risk, tick, vigilance.factor(tick, settings, now) * adaptive)
-            stats.rhythm(now.risk, interval, if (settings.enabled) vigilance.remainingMs(tick) else 0)
-            stats.adaptive(level, ImageAdaptation.incidentsIn(adaptiveSettings(), incidents, wallNow()), ImageAdaptation.sensitivity(sensitivity(), level))
-            if (tick - lastAt >= interval) {
-                Log.i(TAG, "captura: intervalo=${interval}ms nivel=${level} riesgo=${now.risk} navegador=${now.isBrowser} vigilancia=${vigilance.remainingMs(tick) / 1000}s ajustes=${settings.encode()}")
-                // El tiempo se cuenta desde que empieza la captura, no desde que acaba: al ritmo mínimo la siguiente sale en cuanto termina esta.
-                lastAt = tick
-                val outcome = captureOnce(power.isInteractive)
-                scheduler.record(now.key, outcome.assessment, SystemClock.elapsedRealtime(), outcome.fresh)
-                // Una captura reutilizada (la pantalla no cambió y era segura) no es una observación nueva: no se vuelve a decidir con ella.
-                if (outcome.fresh) respond(outcome.assessment)
+            lastTickAt = SystemClock.elapsedRealtime()
+            try {
+                lastAt = turn(power, lastAt)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                // Un fallo en una vuelta no debe parar la detección: se apunta y se sigue en la siguiente.
+                Log.w(TAG, "fallo en una vuelta del bucle de capturas", e)
             }
             delay(TICK_MS)
         }
+    }
+
+    /** Una vuelta del bucle; devuelve cuándo empezó la última captura. */
+    private suspend fun turn(power: PowerManager, lastCaptureAt: Long): Long {
+        val now = target() ?: CaptureTarget(UNKNOWN_KEY, CaptureRisk.NORMAL)
+        val settings = vigilanceSettings()
+        val tick = SystemClock.elapsedRealtime()
+        val level = adaptiveLevel()
+        // El nivel del modo dinámico acorta el tiempo de lo que le toca según el alcance elegido, haya o no vigilancia ahora.
+        val adaptive = if (level > 0 && ImageVigilance.appliesTo(settings, now)) ImageAdaptation.intervalFactor(level) else 1.0
+        val interval = scheduler.intervalMs(now.key, now.risk, tick, vigilance.factor(tick, settings, now) * adaptive)
+        stats.rhythm(now.risk, interval, if (settings.enabled) vigilance.remainingMs(tick) else 0)
+        stats.adaptive(level, ImageAdaptation.incidentsIn(adaptiveSettings(), incidents, wallNow()), ImageAdaptation.sensitivity(sensitivity(), level))
+        if (tick - lastCaptureAt < interval) return lastCaptureAt
+        Log.i(TAG, "captura: intervalo=${interval}ms nivel=${level} riesgo=${now.risk} navegador=${now.isBrowser} vigilancia=${vigilance.remainingMs(tick) / 1000}s ajustes=${settings.encode()}")
+        // El tiempo se cuenta desde que empieza la captura, no desde que acaba: al ritmo mínimo la siguiente sale en cuanto termina esta.
+        val outcome = captureOnce(power.isInteractive)
+        scheduler.record(now.key, outcome.assessment, SystemClock.elapsedRealtime(), outcome.fresh)
+        // Una captura reutilizada (la pantalla no cambió y era segura) no es una observación nueva: no se vuelve a decidir con ella.
+        if (outcome.fresh) respond(outcome.assessment)
+        return tick
     }
 
     /** El nivel de alerta del modo dinámico ahora, según los bloqueos recientes. */
@@ -181,14 +222,19 @@ class ImageProbe(
     private class Outcome(val assessment: ImageAssessment?, val fresh: Boolean)
 
     private suspend fun captureOnce(screenOn: Boolean): Outcome {
-        if (CaptureGate.skipReason(screenOn, foregroundPackage(), trusted(), unchanged = false) != null) {
+        val skip = CaptureGate.skipReason(screenOn, foregroundPackage(), trusted(), unchanged = false)
+        if (skip != null) {
+            Log.i(TAG, "saltada: $skip")
             stats.skipped()
             return Outcome(null, fresh = false)
         }
         val startedAt = SystemClock.elapsedRealtime()
-        val shot = take()
+        // Si el sistema no responde a la captura, sin un límite el bucle se quedaría esperando para siempre.
+        val shot = withTimeoutOrNull(CAPTURE_TIMEOUT_MS) { take() } ?: Shot.Failed(TIMEOUT_CODE)
         if (shot !is Shot.Ok) {
-            stats.failed(SystemClock.elapsedRealtime() - startedAt, (shot as? Shot.Failed)?.code)
+            val code = (shot as? Shot.Failed)?.code
+            Log.w(TAG, "captura fallida: código=$code")
+            stats.failed(SystemClock.elapsedRealtime() - startedAt, code)
             return Outcome(null, fresh = false)
         }
         return withContext(Dispatchers.Default) {
@@ -266,11 +312,17 @@ class ImageProbe(
                         Shot.Ok(small, letterbox)
                     }.getOrNull()
                     buffer.close()
-                    cont.resume(shot ?: Shot.Failed(null))
+                    if (cont.isActive) {
+                        cont.resume(shot ?: Shot.Failed(null))
+                    } else if (shot is Shot.Ok) {
+                        // Llegó tarde (ya se dio por perdida): nadie la va a usar.
+                        shot.small.recycle()
+                        shot.letterbox?.recycle()
+                    }
                 }
 
                 override fun onFailure(errorCode: Int) {
-                    cont.resume(Shot.Failed(errorCode))
+                    if (cont.isActive) cont.resume(Shot.Failed(errorCode))
                 }
             },
         )
@@ -311,5 +363,11 @@ class ImageProbe(
         private const val UNKNOWN_KEY = "?"
         private const val PROBE_SIZE = 224
         private const val FINGERPRINT_GRID = 16
+        private const val CAPTURE_TIMEOUT_MS = 5_000L
+        /** Código propio (los del sistema son positivos) para una captura que no respondió a tiempo. */
+        private const val TIMEOUT_CODE = -1
+        private const val WATCHDOG_EVERY_MS = 15_000L
+        /** Una vuelta normal tarda menos de un segundo y una captura como mucho [CAPTURE_TIMEOUT_MS]: 30 s sin vuelta es que algo se paró. */
+        private const val STALL_MS = 30_000L
     }
 }
