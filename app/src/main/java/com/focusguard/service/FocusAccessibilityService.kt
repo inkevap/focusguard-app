@@ -174,6 +174,7 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
     private lateinit var decider: BlockDecider
     private val categories: CategoryTable by lazy { CategoryCatalog.fromAssets(this) }
     private var neverBlock: Set<String> = emptySet()
+    private var cameraAndGallery: Set<String> = emptySet()
     private var overlayPackages: Set<String> = emptySet()
     private var profiles: List<Profile> = emptyList()
     private var needsDevice = false
@@ -223,6 +224,7 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
         notifier = Notifier(this)
         appLabel = getString(R.string.app_name)
         neverBlock = NeverBlockProvider.build(this)
+        cameraAndGallery = NeverBlockProvider.cameraAndGalleryPackages(this)
         overlayPackages = NeverBlockProvider.overlayPackages(this)
         decider = newDecider(settings.dayStartMinute.value)
         blockGate.install { pkg -> decide(stateOf(pkg)) is BlockDecision.Block }
@@ -244,7 +246,7 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
             this, GantManScorer(this), NudeNetScorer(this), imageProbeStats, scope,
             target = { foregroundState()?.let { CaptureRiskClassifier.classify(it, categories) } },
             foregroundPackage = { foregroundState()?.packageName },
-            trusted = { neverBlock },
+            trusted = { neverBlock + cameraAndGallery },
             sensitivity = { settings.imageSensitivity.value },
             notifyEveryMs = { ImageAlerts.toMs(settings.imageNotifyMinutes.value) },
             vigilanceSettings = { settings.imageVigilance.value },

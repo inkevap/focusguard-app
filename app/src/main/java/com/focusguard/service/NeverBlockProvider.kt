@@ -34,4 +34,29 @@ object NeverBlockProvider {
 
         return result
     }
+
+    /**
+     * Cámara y visor de fotos del teléfono: la detección de imágenes no los mira, porque ahí salen las fotos que uno se toma (DECISIONES).
+     * Se quitan los navegadores, por si alguno se anuncia como visor de imágenes.
+     */
+    fun cameraAndGalleryPackages(context: Context): Set<String> {
+        val pm = context.packageManager
+        val browsers = pm.queryIntentActivities(
+            Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://example.com")).addCategory(Intent.CATEGORY_BROWSABLE),
+            PackageManager.MATCH_ALL,
+        ).mapTo(mutableSetOf()) { it.activityInfo.packageName }
+
+        val result = mutableSetOf<String>()
+        listOf(
+            Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE),
+            Intent(android.provider.MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA),
+            Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_APP_GALLERY),
+        ).forEach { intent -> pm.queryIntentActivities(intent, 0).mapTo(result) { it.activityInfo.packageName } }
+        // El visor de fotos por defecto (Google Fotos, la galería del fabricante); si no hay uno elegido sale el selector de Android y se ignora.
+        pm.resolveActivity(Intent(Intent.ACTION_VIEW).setType("image/*"), PackageManager.MATCH_DEFAULT_ONLY)
+            ?.activityInfo?.packageName
+            ?.takeIf { it != "android" }
+            ?.let(result::add)
+        return result - browsers
+    }
 }

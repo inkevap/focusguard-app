@@ -263,3 +263,8 @@ Registro de decisiones del proyecto. Añade una entrada por cada una: fecha, dec
 - **Qué se apunta**: lo que antes iba a `Log.w` o se tragaba en silencio (bucle de capturas, modelos, ciclo de uso del servicio, plan B de la pantalla de bloqueo, filtro DNS, push, widgets, racha), cuándo se detiene el servicio de bloqueo y los fallos que cierran la app (manejador global, guardado al momento). Los `runCatching` que solo leen datos con valor por defecto no cuentan como fallo.
 - **Cuánto**: los 60 más recientes; un fallo repetido suma a su línea en vez de ocupar una nueva. Tipo de error, mensaje y las tres primeras líneas de la traza de la app (no hay ofuscación, se leen tal cual).
 - **Privacidad**: no sale del teléfono; el usuario puede copiarlo desde Ajustes > Registro de fallos. No guarda texto de pantalla ni imágenes.
+
+## La detección de imágenes no mira la cámara ni el visor de fotos (0.8.3)
+- **Por qué**: bloqueaba al usuario al tomarse fotos sin playera en el gimnasio. En la cámara y la galería salen las fotos propias, no contenido de fuera.
+- **Qué apps**: las que responden a tomar foto (`IMAGE_CAPTURE`, `STILL_IMAGE_CAMERA`), la galería del sistema (`CATEGORY_APP_GALLERY`) y el visor de imágenes por defecto. Se quitan los navegadores. La lista se arma al iniciar el servicio (`NeverBlockProvider.cameraAndGalleryPackages`).
+- **Alcance**: solo la detección de imágenes; el resto de bloqueos (perfiles, límites, palabras) sigue igual en esas apps. Lo que se baje de internet y se abra en la galería tampoco se mira: el usuario lo aceptó al pedirlo.
