@@ -32,6 +32,8 @@
     <string name="lock_report_failed">No se pudo enviar el reporte. Inténtalo más tarde.</string>
     <string name="boot_shield_title">Un momento</string>
     <string name="boot_shield_body">FocusGuard está arrancando: tu protección se está activando. Se quita sola en cuanto esté lista. Para una emergencia, usa el botón de llamada de emergencia del teléfono.</string>
+    <string name="lock_reason_flags">Las páginas de experimentos del navegador están cerradas mientras se bloquean las pestañas privadas: desde ahí se puede cegar la detección de imágenes.</string>
+    <string name="lock_reason_private">Las pestañas privadas no se pueden revisar con la detección de imágenes encendida. Usa una pestaña normal.</string>
     <string name="lock_reason_image">%1$s tenía contenido explícito en pantalla y la detección de imágenes está activa.</string>
     <string name="image_offer_title">Contenido sugerente en pantalla</string>
     <string name="image_offer_text">¿Quieres bloquearlo? Se cierra lo que estás viendo.</string>

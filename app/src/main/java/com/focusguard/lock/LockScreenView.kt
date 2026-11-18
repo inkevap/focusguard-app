@@ -124,6 +124,8 @@ class LockScreenView(
             BlockReason.EMBEDDED_BROWSER -> R.string.lock_reason_embedded_browser
             BlockReason.ADULT_CONTENT -> R.string.lock_reason_adult
             BlockReason.IMAGE_CONTENT -> R.string.lock_reason_image
+            BlockReason.PRIVATE_BROWSING -> R.string.lock_reason_private
+            BlockReason.BROWSER_FLAGS -> R.string.lock_reason_flags
             BlockReason.ADMIN_PROTECTED -> R.string.lock_reason_admin
         }
     }

@@ -76,6 +76,7 @@ class ApprovalExecutor(
             key == KEY_IMAGE_ADAPTIVE -> applyDecoded(request, AdaptiveSettings::decode, settings::setImageAdaptive)?.let { return it }
             key == KEY_IMAGE_VIGILANCE -> applyDecoded(request, VigilanceSettings::decode, settings::setImageVigilance)?.let { return it }
             key == KEY_IMAGE_PROBE_OFF -> settings.setImageProbe(false)
+            key == KEY_PRIVATE_TABS_OFF -> settings.setBlockPrivateTabs(false)
             key == KEY_IMAGE_SENSITIVITY -> applyDecoded(request, ImageSensitivity::decode, settings::setImageSensitivity)?.let { return it }
             // Solo se pide aprobación para apagarlo: encenderlo es libre.
             key == KEY_FOLD_FLOATING -> settings.setFoldFloating(false)
@@ -166,6 +167,7 @@ class ApprovalExecutor(
         const val KEY_EMBEDDED = "embedded_browsers"
         const val KEY_IMAGE_SENSITIVITY = "image_sensitivity"
         const val KEY_IMAGE_PROBE_OFF = "image_probe_off"
+        const val KEY_PRIVATE_TABS_OFF = "image_private_off"
         const val KEY_IMAGE_VIGILANCE = "image_vigilance"
         const val KEY_IMAGE_ADAPTIVE = "image_adaptive"
         const val KEY_FOLD_FLOATING = "fold_floating"

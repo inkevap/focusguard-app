@@ -36,6 +36,8 @@ import com.focusguard.data.NoticeLedger
 import com.focusguard.data.WrongBlockReporter
 import com.focusguard.data.PartnerEventOutbox
 import com.focusguard.decision.AdultGate
+import com.focusguard.decision.BrowserFlags
+import com.focusguard.decision.BrowserPrep
 import com.focusguard.diagnostics.Faults
 import com.focusguard.decision.AdultTextExemptions
 import com.focusguard.decision.WrongBlockReports
@@ -171,6 +173,7 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
     private val handler = Handler(Looper.getMainLooper())
 
     private lateinit var browsers: BrowserTable
+    private lateinit var prep: BrowserPrepRunner
     private lateinit var decider: BlockDecider
     private val categories: CategoryTable by lazy { CategoryCatalog.fromAssets(this) }
     private var neverBlock: Set<String> = emptySet()
@@ -260,8 +263,19 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
             wallNow = { clock.nowMs() },
             onBlock = ::blockImageContent,
             onOffer = ::offerImageBlock,
+            onProtected = ::blockPrivateBrowsing,
         )
         ContextCompat.registerReceiver(this, imageBlockReceiver, IntentFilter(ImageActions.BLOCK_NOW), ContextCompat.RECEIVER_NOT_EXPORTED)
+        prep = BrowserPrepRunner(
+            this, handler, ::addressBarNode,
+            onProgress = { settings.setBrowserPrep(it, running = true) },
+            onFinish = { results ->
+                settings.setBrowserPrep(results, running = false)
+                // Al acabar se vuelve a FocusGuard, donde se ve cómo quedó cada navegador.
+                packageManager.getLaunchIntentForPackage(packageName)?.let { runCatching { startActivity(it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } }
+            },
+        )
+        ContextCompat.registerReceiver(this, prepReceiver, IntentFilter(BrowserPrepRunner.ACTION_START), ContextCompat.RECEIVER_NOT_EXPORTED)
         scope.launch { settings.imageProbe.collect { if (it) imageProbe?.start() else imageProbe?.stop() } }
         // Basta saber el día del último ánimo apuntado para saber si hoy ya se respondió.
         scope.launch { habits.lastMoodDay.collect { lastMoodDay = it; moodLoaded = true } }
@@ -509,6 +523,11 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
         }
         imageProbe?.stop()
         runCatching { unregisterReceiver(imageBlockReceiver) }
+        runCatching { unregisterReceiver(prepReceiver) }
+        if (::prep.isInitialized && prep.running) {
+            prep.cancel()
+            settings.setBrowserPrep(settings.browserPrep.value, running = false)
+        }
         removeOverlay()
         deviceContext.stopLocationUpdates()
         deviceContext.setBluetoothWanted(false)
@@ -602,14 +621,13 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
         return ForegroundState(packageName, url, isBrowser)
     }
 
-    private fun readAddressBar(packageName: String): String? {
-        val viewId = browsers.addressBarViewId(packageName) ?: return null
-        return rootInActiveWindow
-            ?.findAccessibilityNodeInfosByViewId(viewId)
-            ?.firstOrNull()
-            ?.text
-            ?.toString()
-            ?.takeIf { it.isNotBlank() }
+    private fun readAddressBar(packageName: String): String? =
+        addressBarNode(packageName)?.text?.toString()?.takeIf { it.isNotBlank() }?.let(UrlNormalizer::addressText)
+
+    /** La barra de direcciones en pantalla: el primero de los identificadores del navegador que aparezca. */
+    private fun addressBarNode(packageName: String): AccessibilityNodeInfo? {
+        val root = rootInActiveWindow ?: return null
+        return browsers.addressBarViewIds(packageName).firstNotNullOfOrNull { root.findAccessibilityNodeInfosByViewId(it)?.firstOrNull() }
     }
 
     private fun block(decision: BlockDecision.Block, packageName: String) {
@@ -619,6 +637,12 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
         lastBlockAtMs = now
 
         record(decision)
+        // Una página flags suele ser la única de su pestaña: «atrás» solo minimiza el navegador y al volver sigue ahí. Se cambia por una página en blanco
+        // antes de tapar la pantalla (con la pantalla de bloqueo encima la barra ya no es la ventana activa).
+        if (decision.reason == BlockReason.BROWSER_FLAGS && openBlankPage(packageName)) {
+            showLockScreen(decision)
+            return
+        }
         showLockScreen(decision)
         // El objetivo es el propio paquete cuando se bloquea la app entera, sea cual sea el motivo (también por límite).
         if (browsers.isBrowser(packageName) && decision.target != packageName) {
@@ -635,8 +659,7 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
             handler.postDelayed({ performGlobalAction(GLOBAL_ACTION_BACK) }, i * BACK_INTERVAL_MS)
         }
         handler.postDelayed({
-            val stillBlocked = decide(currentState(packageName)) is BlockDecision.Block
-            if (stillBlocked) performGlobalAction(GLOBAL_ACTION_HOME)
+            if (pageBlocked(packageName)) performGlobalAction(GLOBAL_ACTION_HOME)
         }, HOME_FALLBACK_MS)
     }
 
@@ -660,7 +683,7 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
         var attempt = 0
         val step = object : Runnable {
             override fun run() {
-                if (decide(currentState(packageName)) !is BlockDecision.Block) return
+                if (!pageBlocked(packageName)) return
                 attempt++
                 when {
                     attempt <= BACK_PRESSES -> {
@@ -675,10 +698,15 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
         handler.post(step)
     }
 
+    /** Lo que hay ahora en el navegador sigue bloqueado: por un perfil o el filtro, o por ser una página flags (que se decide aparte). */
+    private fun pageBlocked(packageName: String): Boolean {
+        val state = currentState(packageName)
+        return decide(state) is BlockDecision.Block || (state.isBrowser && flagsClosed(packageName) && BrowserFlags.isFlagsPage(state.url))
+    }
+
     /** Escribe `about:blank` en la barra de direcciones y la envía. Devuelve si se pudo (la tecla Intro sin teclado exige Android 11). */
     private fun openBlankPage(packageName: String): Boolean {
-        val viewId = browsers.addressBarViewId(packageName) ?: return false
-        val bar = rootInActiveWindow?.findAccessibilityNodeInfosByViewId(viewId)?.firstOrNull() ?: return false
+        val bar = addressBarNode(packageName) ?: return false
         if (!bar.isEditable) return false
         bar.performAction(AccessibilityNodeInfo.ACTION_FOCUS)
         val text = Bundle().apply { putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, "about:blank") }
@@ -814,6 +842,7 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
         if (state != null) {
             val decision = decide(state, now)
             if (decision is BlockDecision.Block) block(decision, state.packageName)
+            else if (interactive) blockPrivateTabByBadge(state, nowMs)
         }
         // Bloqueo activo para las rachas: el filtro de contenido adulto encendido, o algún perfil bloqueando ahora sin un desbloqueo de emergencia vigente.
         protectedTime.tick(nowMs, settings.adultBlockEnabled.value || decider.isProtecting(profiles, now, usage, context.value, emergency.activeUntil, targetUsage), streaks.dayOf(now))
@@ -907,6 +936,44 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
     private fun blockImageContent(packageName: String?) {
         val pkg = packageName ?: return
         block(BlockDecision.Block(BlockReason.IMAGE_CONTENT, 0, pkg, targetIsApp = true), pkg)
+    }
+
+    /** ¿Hay que cerrar las pestañas privadas? Solo con la detección de imágenes encendida y el ajuste encendido. */
+    private fun blockingPrivateTabs() = settings.imageProbe.value && settings.blockPrivateTabs.value
+
+    /** Las páginas flags están cerradas con el ajuste, salvo en el navegador que el asistente «Preparar navegadores» está manejando ahora. */
+    private fun flagsClosed(packageName: String) = blockingPrivateTabs() && !(::prep.isInitialized && prep.currentPackage == packageName)
+
+    /** Empieza el asistente con los navegadores instalados que tienen la opción. */
+    private val prepReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (prep.running) return
+            val installed = BrowserPrep.SUPPORTED.filter { packageManager.getLaunchIntentForPackage(it) != null }
+            removeOverlay()
+            settings.setBrowserPrep(emptyMap(), running = installed.isNotEmpty())
+            if (installed.isEmpty()) return
+            prep.start(installed)
+        }
+    }
+
+    /** Primera señal: un navegador con la insignia de incógnito en pantalla. */
+    private fun blockPrivateTabByBadge(state: ForegroundState, nowMs: Long) {
+        if (!state.isBrowser || !blockingPrivateTabs() || state.packageName in neverBlock) return
+        // Las páginas flags permiten volver a impedir las capturas de las pestañas privadas: se cierran con el mismo ajuste.
+        if (BrowserFlags.isFlagsPage(state.url)) {
+            if (!flagsClosed(state.packageName)) return
+            // El objetivo es la página (no el paquete): así se cierra la pestaña y no solo se sale al inicio.
+            block(BlockDecision.Block(BlockReason.BROWSER_FLAGS, 0, state.url.orEmpty().trim(), targetIsApp = false), state.packageName)
+            return
+        }
+        if (isIncognito(state.packageName, nowMs) == true) blockPrivateBrowsing(state.packageName)
+    }
+
+    /** Segunda señal (o la primera, desde la captura): una pestaña privada no se puede revisar, se cierra con la pantalla de bloqueo. Solo navegadores. */
+    private fun blockPrivateBrowsing(packageName: String?) {
+        val pkg = packageName ?: return
+        if (!blockingPrivateTabs() || !browsers.isBrowser(pkg) || pkg in neverBlock) return
+        block(BlockDecision.Block(BlockReason.PRIVATE_BROWSING, 0, pkg, targetIsApp = true), pkg)
     }
 
     /** La detección de imágenes vio algo sugerente: se ofrece bloquearlo con una notificación (si el sistema deja mostrarla). */
@@ -1116,6 +1183,6 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
         const val ADULT_DETAIL_WORDS = 4
 
         /** Motivos que vienen de la página que enseña un navegador. */
-        val WEB_REASONS = setOf(BlockReason.PROFILE_WEB, BlockReason.ADULT_CONTENT, BlockReason.NOT_ALLOWED)
+        val WEB_REASONS = setOf(BlockReason.PROFILE_WEB, BlockReason.ADULT_CONTENT, BlockReason.NOT_ALLOWED, BlockReason.BROWSER_FLAGS)
     }
 }

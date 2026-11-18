@@ -26,6 +26,8 @@ import com.focusguard.decision.ImageResponder
 import com.focusguard.decision.ImageTier
 import com.focusguard.decision.ImageVigilance
 import com.focusguard.decision.NudeNetOutput
+import com.focusguard.decision.ProtectedScreen
+import com.focusguard.decision.ProtectedStreak
 import com.focusguard.decision.VigilanceSettings
 import com.focusguard.diagnostics.Faults
 import kotlin.coroutines.resume
@@ -81,9 +83,12 @@ class ImageProbe(
     private val onBlock: (String?) -> Unit,
     /** Lo sugerente en pantalla: se ofrece bloquearlo con una notificación. */
     private val onOffer: () -> Unit,
+    /** Un navegador con la pantalla protegida (captura negra) en dos capturas seguidas: casi seguro una pestaña privada, que no se puede revisar. */
+    private val onProtected: (String?) -> Unit = {},
 ) {
     private val scheduler = CaptureScheduler(CaptureTiming())
     private val vigilance = ImageVigilance()
+    private val protectedStreak = ProtectedStreak()
     private var job: Job? = null
     private var watchdog: Job? = null
     /** Cuándo dio el bucle su última vuelta: si deja de avanzar, el vigilante lo relanza. */
@@ -121,6 +126,7 @@ class ImageProbe(
         lastResult = null
         responder = ImageResponder()
         vigilance.clear()
+        protectedStreak.clear()
     }
 
     /**
@@ -180,8 +186,14 @@ class ImageProbe(
         if (tick - lastCaptureAt < interval) return lastCaptureAt
         Log.i(TAG, "captura: intervalo=${interval}ms nivel=${level} riesgo=${now.risk} navegador=${now.isBrowser} vigilancia=${vigilance.remainingMs(tick) / 1000}s ajustes=${settings.encode()}")
         // El tiempo se cuenta desde que empieza la captura, no desde que acaba: al ritmo mínimo la siguiente sale en cuanto termina esta.
-        val outcome = captureOnce(power.isInteractive)
+        val outcome = captureOnce(power.isInteractive, now.isBrowser)
         scheduler.record(now.key, outcome.assessment, SystemClock.elapsedRealtime(), outcome.fresh)
+        // Una captura negra de un navegador no se puntúa: se cuenta, y a la segunda seguida se avisa (el servicio decide si bloquea según el ajuste).
+        val pkg = foregroundPackage()
+        if (protectedStreak.record(pkg, outcome.protectedScreen)) {
+            Log.i(TAG, "pantalla protegida en dos capturas seguidas: pestaña privada")
+            onProtected(pkg)
+        }
         // Una captura reutilizada (la pantalla no cambió y era segura) no es una observación nueva: no se vuelve a decidir con ella.
         if (outcome.fresh) respond(outcome.assessment)
         return tick
@@ -220,9 +232,10 @@ class ImageProbe(
         history.setVigilanceUntilMs(wallNow() + minutes * 60_000L)
     }
 
-    private class Outcome(val assessment: ImageAssessment?, val fresh: Boolean)
+    /** [protectedScreen]: la captura de un navegador salió negra por una ventana protegida; no se puntuó. */
+    private class Outcome(val assessment: ImageAssessment?, val fresh: Boolean, val protectedScreen: Boolean = false)
 
-    private suspend fun captureOnce(screenOn: Boolean): Outcome {
+    private suspend fun captureOnce(screenOn: Boolean, isBrowser: Boolean): Outcome {
         val skip = CaptureGate.skipReason(screenOn, foregroundPackage(), trusted(), unchanged = false)
         if (skip != null) {
             Log.i(TAG, "saltada: $skip")
@@ -242,6 +255,14 @@ class ImageProbe(
             val small = shot.small
             try {
                 val captureMs = SystemClock.elapsedRealtime() - startedAt
+                // Una ventana protegida (pestaña privada) sale negra: ni se puntúa como segura ni se reutiliza, o la huella igual la daría por buena para siempre.
+                if (isBrowser && isProtectedScreen(small)) {
+                    lastHash = null
+                    lastResult = null
+                    stats.skipped()
+                    Log.i(TAG, "captura protegida (negra) en un navegador: no se puntúa")
+                    return@withContext Outcome(null, fresh = false, protectedScreen = true)
+                }
                 val hash = fingerprint(small)
                 // Solo se reutiliza lo seguro: si lo último fue sospechoso se vuelve a puntuar, para poder confirmarlo o descartarlo.
                 if (hash == lastHash && lastResult?.level == ImageLevel.SAFE) {
@@ -342,6 +363,13 @@ class ImageProbe(
         }
         if (scaled !== full) scaled.recycle()
         return out
+    }
+
+    /** ¿La captura reducida es una ventana protegida, negra del todo? La regla está en [ProtectedScreen]. */
+    private fun isProtectedScreen(bitmap: Bitmap): Boolean {
+        val pixels = IntArray(bitmap.width * bitmap.height)
+        bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+        return ProtectedScreen.isProtected(pixels, bitmap.width, bitmap.height)
     }
 
     /** Una huella barata de la imagen: si no cambió desde la última, no hace falta puntuarla otra vez. */

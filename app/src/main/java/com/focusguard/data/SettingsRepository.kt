@@ -3,6 +3,7 @@ package com.focusguard.data
 import android.content.Context
 import com.focusguard.BuildConfig
 import com.focusguard.server.ServerUrl
+import com.focusguard.decision.BrowserPrep
 import com.focusguard.decision.AutoReactivation
 import com.focusguard.decision.EmbeddedBrowserPolicy
 import com.focusguard.decision.MoodPromptSettings
@@ -168,6 +169,36 @@ class SettingsRepository(context: Context) {
     fun setImageProbe(value: Boolean) {
         prefs.edit().putBoolean(KEY_IMAGE_PROBE, value).apply()
         _imageProbe.value = value
+    }
+
+    private val _blockPrivateTabs = MutableStateFlow(prefs.getBoolean(KEY_BLOCK_PRIVATE_TABS, true))
+
+    /**
+     * Bloquear las pestañas privadas de los navegadores (encendido de serie): su ventana es segura y la captura sale negra, así que la detección de imágenes
+     * no puede revisarlas. Solo actúa con la detección encendida. Encenderlo es libre; **apagarlo debilita** y pasa por [ChangeGuard] (con un compañero,
+     * siempre por él): esa decisión se toma antes de llamar a [setBlockPrivateTabs], que solo guarda.
+     */
+    val blockPrivateTabs: StateFlow<Boolean> = _blockPrivateTabs.asStateFlow()
+
+    fun setBlockPrivateTabs(value: Boolean) {
+        prefs.edit().putBoolean(KEY_BLOCK_PRIVATE_TABS, value).apply()
+        _blockPrivateTabs.value = value
+    }
+
+    private val _browserPrep = MutableStateFlow(BrowserPrep.decode(prefs.getString(KEY_BROWSER_PREP, null)))
+
+    /** Cómo quedó cada navegador la última vez que se usó el asistente «Preparar navegadores» (paquete → resultado). */
+    val browserPrep: StateFlow<Map<String, BrowserPrep.Result>> = _browserPrep.asStateFlow()
+
+    private val _browserPrepRunning = MutableStateFlow(false)
+
+    /** El asistente está trabajando ahora. No se guarda: si el servicio se reinicia, el asistente se para. */
+    val browserPrepRunning: StateFlow<Boolean> = _browserPrepRunning.asStateFlow()
+
+    fun setBrowserPrep(results: Map<String, BrowserPrep.Result>, running: Boolean) {
+        prefs.edit().putString(KEY_BROWSER_PREP, BrowserPrep.encode(results)).apply()
+        _browserPrep.value = results
+        _browserPrepRunning.value = running
     }
 
     private val _imageSensitivity = MutableStateFlow(ImageSensitivity.clamp(prefs.getInt(KEY_IMAGE_SENSITIVITY, ImageSensitivity.DEFAULT)))
@@ -468,6 +499,8 @@ class SettingsRepository(context: Context) {
         const val KEY_PARTNER_PANEL = "partner_panel"
         const val KEY_NUDGE = "nudge_enabled"
         const val KEY_IMAGE_PROBE = "image_probe"
+        const val KEY_BLOCK_PRIVATE_TABS = "block_private_tabs"
+        const val KEY_BROWSER_PREP = "browser_prep"
         const val KEY_IMAGE_SENSITIVITY = "image_sensitivity"
         const val KEY_IMAGE_NOTIFY_MINUTES = "image_notify_minutes"
         const val KEY_IMAGE_VIGILANCE = "image_vigilance"

@@ -56,6 +56,9 @@ object Approvals {
     /** Quitar un aviso o una protección del panel del compañero. */
     const val ACTION_PARTNER_PANEL = 2035
 
+    /** Dejar de bloquear las pestañas privadas con la detección de imágenes encendida. */
+    const val ACTION_PRIVATE_TABS_OFF = 2036
+
     /** Textos largos de literatura clásica en español (dominio público), para teclear a mano. */
     val PHRASES = listOf(
         "En un lugar de la Mancha, de cuyo nombre no quiero acordarme, no ha mucho tiempo que vivía un hidalgo de los de lanza en astillero, adarga antigua, rocín flaco y galgo corredor.",
@@ -134,6 +137,7 @@ object Approvals {
         actionKey == "image_adaptive" -> "Reducir el modo dinámico de la detección de imágenes (apagarlo, acortar el periodo o bajar el nivel máximo)"
         actionKey == "image_vigilance" -> "Vigilar menos tras detectar contenido explícito (acortar, bajar la intensidad o apagar la vigilancia)"
         actionKey == "image_probe_off" -> "Apagar la detección de imágenes (dejaría de bloquear lo explícito en pantalla)"
+        actionKey == "image_private_off" -> "Dejar de bloquear las pestañas privadas de los navegadores (la detección de imágenes no puede revisarlas y se podría ver lo que sea en ellas)"
         actionKey == "image_sensitivity" -> "Bajar la sensibilidad de la detección de imágenes (se marcaría menos)"
         actionKey == "sign_out" -> "Cerrar la sesión de la cuenta en este teléfono (dejaría de enviarte avisos)"
         actionKey.startsWith("strict_exit:pause:") -> "Pausar el modo estricto ${actionKey.substringAfterLast(':')} minutos (se salta tus reglas durante ese tiempo)"

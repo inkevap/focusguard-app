@@ -1,5 +1,13 @@
 # Cambios
 
+## 0.8.4 (2026-11-18)
+
+- Nuevo ajuste «Bloquear pestañas privadas» en la detección de imágenes (encendido de serie). Las pestañas privadas de los navegadores (Brave, incógnito de Chrome) protegen la pantalla y la captura sale negra, así que la detección no podía revisarlas y dejaba pasar lo explícito. Con la detección encendida, un navegador en una pestaña privada se bloquea con un mensaje propio. Las apps que no son navegadores no se bloquean por esto. Apagar el ajuste pide aprobación de tu compañero si lo tienes, y no se puede con el modo estricto.
+- Con ese mismo ajuste encendido se cierran las páginas de experimentos de los navegadores (`chrome://flags`, `brave://flags`, `internet://flags`…). Desde ahí se puede volver a impedir que las pestañas privadas se capturen.
+- Al bloquear una página flags, la pestaña pasa a una página en blanco. Así «Volver» no te deja en un bucle de bloqueos.
+- Nuevo asistente «Preparar navegadores» en la detección de imágenes. Abre cada navegador instalado que tiene la opción «Incognito Screenshot» (Chrome, Brave, Edge, Vivaldi, Kiwi, Ecosia), la pone en Enabled y lo reinicia, para que sus pestañas privadas se puedan capturar y revisar. Debajo se ve cómo quedó cada uno: «Activada», «Ya estaba» o «Hazlo a mano», con las instrucciones para hacerlo a mano. Para tocar por ti, el permiso de accesibilidad ahora también puede hacer gestos.
+- Corregido: FocusGuard no leía la barra de direcciones de Chrome (la tabla tenía Chrome dos veces y se quedaba con la segunda fila). Los bloqueos por dirección vuelven a funcionar en Chrome, y también en las páginas sin cifrar, a las que Chrome añade «La conexión no es segura».
+
 ## 0.8.3 (2026-11-16)
 
 - La detección de imágenes ya no mira la cámara ni el visor de fotos del teléfono (la galería y el visor de imágenes por defecto), para no bloquear las fotos que te tomas. El resto de bloqueos sigue igual en esas apps.

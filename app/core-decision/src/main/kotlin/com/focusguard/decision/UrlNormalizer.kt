@@ -6,6 +6,20 @@ object UrlNormalizer {
     private val trackingParams = Regex("^(utm_.*|fbclid|gclid|msclkid|mc_eid)$")
     private val scheme = Regex("^[a-z][a-z0-9+.-]*://")
 
+    /** Una dirección sin espacios, un punto y un espacio, y luego texto: el aviso que Chrome añade para los lectores de pantalla. */
+    private val trailingNote = Regex("""^(\S+)\.\s+\S.*$""", RegexOption.DOT_MATCHES_ALL)
+
+    /**
+     * El texto de la barra de direcciones sin el aviso que algunos navegadores le pegan: Chrome lee «chrome://flags. La conexión no es segura»
+     * o «sitio.com. La conexión no es segura» en las páginas sin cifrar. Una búsqueda a medio escribir («hola. que tal») se queda igual si su primera
+     * palabra no parece una dirección (con «:» o con un punto en medio).
+     */
+    fun addressText(raw: String): String {
+        val match = trailingNote.matchEntire(raw.trim()) ?: return raw
+        val address = match.groupValues[1]
+        return if (':' in address || '.' in address) address else raw
+    }
+
     /** Minúsculas, sin protocolo, sin `www.`, sin fragmento ni parámetros de rastreo. */
     fun normalize(raw: String): String {
         var url = raw.trim().lowercase()

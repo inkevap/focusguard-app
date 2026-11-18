@@ -106,7 +106,7 @@ data class PartnerPanel(
         /** Las clases de bloqueo de las que se puede elegir avisar (las que generan el aviso de «intentó abrir algo bloqueado»). */
         val BLOCK_REASONS: List<BlockReason> = listOf(
             BlockReason.PROFILE_APP, BlockReason.PROFILE_WEB, BlockReason.NOT_ALLOWED, BlockReason.LIMIT_REACHED, BlockReason.SUB_APP,
-            BlockReason.NEW_APP, BlockReason.EMBEDDED_BROWSER, BlockReason.ADULT_CONTENT, BlockReason.IMAGE_CONTENT,
+            BlockReason.NEW_APP, BlockReason.EMBEDDED_BROWSER, BlockReason.ADULT_CONTENT, BlockReason.IMAGE_CONTENT, BlockReason.PRIVATE_BROWSING,
         )
 
         /** Acepta el formato de antes (solo avisos y protecciones) y el actual; lo que no se entiende se descarta entero. */

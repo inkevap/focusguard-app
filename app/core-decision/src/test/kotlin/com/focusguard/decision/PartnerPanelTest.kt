@@ -69,7 +69,7 @@ class PartnerPanelTest {
     @Test fun todasLasAccionesDeLaAppEstanEnAlgunAreaSalvoLasDelModoEstrictoYElAdministrador() {
         val keys = listOf(
             "adult_off", "adult_word_remove", "adult_allow", "dns_off", "dns_exclude", "adult_text_exempt", "server_change", "approval_mode", "day_start",
-            "new_apps", "embedded_browsers", "image_sensitivity", "image_probe_off", "image_vigilance", "image_adaptive", "fold_floating", "sign_out",
+            "new_apps", "embedded_browsers", "image_sensitivity", "image_probe_off", "image_private_off", "image_vigilance", "image_adaptive", "fold_floating", "sign_out",
             "launcher_icon", "parental_off", "urge_sharing_off", "partner_notices_off", "partner_panel", "profile_edit:1", "profile_off:1", "profile_delete:1",
             "profile_pause:1", "session_end:1", "streak_restore:1",
         )

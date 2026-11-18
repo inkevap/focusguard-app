@@ -240,6 +240,8 @@ La pantalla muestra las **solicitudes pendientes** (cuándo se pidieron, cuándo
 - **Sensibilidad**, de «Mínima» a «Máxima»; de serie **«Baja»** (nivel 2). Subirla es libre; bajarla pide aprobación si hay compañero.
 - **Modo dinámico**: cuantos más bloqueos explícitos haya en el periodo, más sube el nivel de alerta (1 bloqueo, nivel 1; 3, nivel 2; 6, nivel 3). Cada nivel captura un 20 % más seguido y sube la sensibilidad un paso. De serie un bloqueo **cuenta 6 h** y el nivel sube hasta el 2.
 - **Vigilancia tras lo explícito** y **avisos de lo sugerente**, con sus plazos.
+- **Bloquear pestañas privadas** (encendido de serie): las pestañas privadas de los navegadores (Brave, incógnito de Chrome) protegen la pantalla y la captura sale negra, así que no se pueden revisar. Con la detección encendida, un navegador en una pestaña privada se bloquea con un motivo propio; las apps que no son navegadores no. Encenderlo es libre; apagarlo pide aprobación si hay compañero.
+- **Preparar navegadores**: abre Chrome, Brave y los demás navegadores basados en Chromium que tengas, pone «Incognito Screenshot» en Enabled y los reinicia. Así sus pestañas privadas se pueden revisar en vez de bloquearse. No toques la pantalla mientras trabaja (unos 20 s por navegador). Si un navegador sale con «Hazlo a mano», sigue las instrucciones de esa pantalla. Samsung Internet y Firefox no tienen esa opción.
 
 Los valores guardados en un teléfono no cambian al actualizar; solo los de serie.
 

@@ -14,6 +14,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import android.content.Intent
+import com.focusguard.decision.BrowserPrep
+import com.focusguard.service.BrowserPrepRunner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.focusguard.decision.AdaptiveSettings
 import com.focusguard.decision.CaptureRisk
@@ -48,11 +52,27 @@ fun ImageProbeScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
     val notifyMinutes by viewModel.imageNotifyMinutes.collectAsStateWithLifecycle()
     val vigilance by viewModel.imageVigilance.collectAsStateWithLifecycle()
     val adaptive by viewModel.imageAdaptive.collectAsStateWithLifecycle()
+    val blockPrivate by viewModel.blockPrivateTabs.collectAsStateWithLifecycle()
+    val prepResults by viewModel.browserPrep.collectAsStateWithLifecycle()
+    val prepRunning by viewModel.browserPrepRunning.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val prepRows = prepResults.map { (pkg, result) ->
+        val label = runCatching { context.packageManager.getApplicationLabel(context.packageManager.getApplicationInfo(pkg, 0)).toString() }.getOrDefault(pkg)
+        label to when (result) {
+            BrowserPrep.Result.DONE -> "Activada"
+            BrowserPrep.Result.ALREADY -> "Ya estaba"
+            BrowserPrep.Result.FAILED -> "Hazlo a mano"
+        }
+    }
     val snackbar = rememberMessageSnackbar(viewModel.message, viewModel::clearMessage)
     ImageProbeContent(
         enabled, stats, sensitivity, notifyMinutes, vigilance, adaptive,
         viewModel::setImageProbe, viewModel::setImageSensitivity, viewModel::setImageNotifyMinutes, viewModel::setImageVigilance, viewModel::setImageAdaptive,
         viewModel::resetImageProbe,
+        blockPrivateTabs = blockPrivate, onBlockPrivateTabs = viewModel::setBlockPrivateTabs,
+        prepRows = prepRows, prepRunning = prepRunning,
+        // Lo recibe el servicio de accesibilidad, que es quien puede manejar los navegadores; solo dentro de la app.
+        onPrepare = { context.sendBroadcast(Intent(BrowserPrepRunner.ACTION_START).setPackage(context.packageName)) },
         onBack = onBack, snackbar = snackbar,
     )
 }
@@ -78,6 +98,11 @@ internal fun ImageProbeContent(
     onVigilance: (VigilanceSettings) -> Unit,
     onAdaptive: (AdaptiveSettings) -> Unit,
     onReset: () -> Unit,
+    blockPrivateTabs: Boolean = true,
+    onBlockPrivateTabs: (Boolean) -> Unit = {},
+    prepRows: List<Pair<String, String>> = emptyList(),
+    prepRunning: Boolean = false,
+    onPrepare: () -> Unit = {},
     onBack: (() -> Unit)? = null,
     snackbar: SnackbarHostState? = null,
 ) {
@@ -101,6 +126,27 @@ internal fun ImageProbeContent(
                             "Detectar imágenes", enabled, onChange,
                             subtitle = "Apagada de serie. Apagarla pide aprobación de tu compañero si lo tienes, y no se puede con el modo estricto.",
                         )
+                    }
+                }
+                item {
+                    FgGroup(
+                        footer = "Las pestañas privadas (incógnito) protegen la pantalla y la captura sale negra: la detección no puede revisarlas. Con esto encendido, un navegador en una pestaña privada se bloquea. " +
+                            "Solo actúa con la detección encendida y solo en navegadores. Apagarlo pide aprobación de tu compañero si lo tienes, y no se puede con el modo estricto.",
+                    ) {
+                        FgSwitchRow("Bloquear pestañas privadas", blockPrivateTabs, onBlockPrivateTabs, subtitle = "Encendido de serie.")
+                    }
+                }
+                item {
+                    FgGroup(
+                        footer = "Chrome, Brave y Edge pueden dejar capturar sus pestañas privadas con la opción «Incognito Screenshot». El asistente abre cada navegador, la pone en Enabled " +
+                            "y lo reinicia; no toques la pantalla mientras trabaja. A mano: escribe chrome://flags en la barra, busca «screenshot», pon «Incognito Screenshot» en Enabled y toca Reiniciar " +
+                            "(antes apaga «Bloquear pestañas privadas», que cierra esa página). Samsung Internet y Firefox no tienen la opción: sus pestañas privadas siguen bloqueadas.",
+                    ) {
+                        FgActionRow(
+                            if (prepRunning) "Preparando navegadores…" else "Preparar navegadores", onPrepare, enabled = !prepRunning,
+                            subtitle = "Usa el permiso de accesibilidad para tocar por ti.",
+                        )
+                        prepRows.forEach { (name, state) -> FgRow(name, value = state) }
                     }
                 }
                 if (enabled) {

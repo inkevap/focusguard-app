@@ -105,6 +105,8 @@ private fun reasonLabel(reason: BlockReason) = when (reason) {
     BlockReason.EMBEDDED_BROWSER -> "Navegadores dentro de apps"
     BlockReason.ADULT_CONTENT -> "Contenido adulto (webs y palabras)"
     BlockReason.IMAGE_CONTENT -> "Imágenes explícitas detectadas"
+    BlockReason.PRIVATE_BROWSING -> "Pestañas privadas bloqueadas"
+    BlockReason.BROWSER_FLAGS -> "Páginas flags del navegador"
     else -> reason.name
 }
 

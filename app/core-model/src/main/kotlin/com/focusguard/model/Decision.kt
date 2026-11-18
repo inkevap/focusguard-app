@@ -44,6 +44,12 @@ enum class BlockReason {
     /** Contenido explícito visto en una captura de pantalla por la detección de imágenes. */
     IMAGE_CONTENT,
 
+    /** Navegador en una pestaña privada o de incógnito con la detección de imágenes encendida: su ventana es segura y la captura sale negra, así que no se puede revisar. */
+    PRIVATE_BROWSING,
+
+    /** Página de experimentos de un navegador (`chrome://flags`…): desde ahí se vuelven a impedir las capturas de las pestañas privadas. */
+    BROWSER_FLAGS,
+
     /** Los ajustes del administrador del dispositivo: desactivarlo permitiría desinstalar la app, así que pide permiso aunque no haya modo estricto. */
     ADMIN_PROTECTED,
     ;

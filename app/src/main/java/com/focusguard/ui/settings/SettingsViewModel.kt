@@ -42,6 +42,24 @@ class SettingsViewModel(
 
     val imageProbe: StateFlow<Boolean> = settings.imageProbe
 
+    val blockPrivateTabs: StateFlow<Boolean> = settings.blockPrivateTabs
+
+    /** Encender es libre. Apagar debilita la protección (las pestañas privadas no se pueden revisar): pasa por el compañero, el modo estricto y las aprobaciones, como apagar la detección. */
+    fun setBlockPrivateTabs(value: Boolean) {
+        if (!value && settings.blockPrivateTabs.value) {
+            val result = guard.check(ApprovalExecutor.KEY_PRIVATE_TABS_OFF, Approvals.ACTION_PRIVATE_TABS_OFF, viaPartner = guard.partnerLinked)
+            if (result is GuardResult.Blocked) {
+                message = result.message
+                return
+            }
+        }
+        settings.setBlockPrivateTabs(value)
+    }
+
+    val browserPrep: StateFlow<Map<String, com.focusguard.decision.BrowserPrep.Result>> = settings.browserPrep
+
+    val browserPrepRunning: StateFlow<Boolean> = settings.browserPrepRunning
+
     val imageSensitivity: StateFlow<Int> = settings.imageSensitivity
 
     /**
