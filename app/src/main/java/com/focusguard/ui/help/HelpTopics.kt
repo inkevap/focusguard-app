@@ -301,7 +301,7 @@ internal object HelpTopics {
         HelpTopic(
             id = "bloqueo-apps",
             title = "Más opciones para bloquear apps",
-            summary = "Además de la lista del perfil, FocusGuard puede cerrar las ventanas Picture-in-Picture y las flotantes de apps bloqueadas, pausar su música o vídeo, bloquear las apps recién instaladas durante un tiempo, bloquear los navegadores dentro de otras apps y detectar la pantalla dividida. Con el modo estricto, también cierra el menú de apagado, el panel de notificaciones, el administrador de tareas, los diálogos de compra y el ahorro extremo de batería.",
+            summary = "Además de la lista del perfil, FocusGuard puede cerrar las ventanas Picture-in-Picture y las flotantes de apps bloqueadas, pausar su música o vídeo, bloquear las apps recién instaladas durante un tiempo, bloquear los navegadores dentro de otras apps y detectar la pantalla dividida (solo la división real: abrir el teclado o cambiar de app no cuenta). Con el modo estricto, también cierra el menú de apagado, el panel de notificaciones, el administrador de tareas, los diálogos de compra y el ahorro extremo de batería.",
             example = "Instalas una app nueva y queda bloqueada unas horas hasta que decidas.",
             notes = listOf(
                 "Las apps recién instaladas se pueden añadir solas a un perfil, o bloquearse por un plazo con un interruptor global; aflojarlo pide aprobación.",

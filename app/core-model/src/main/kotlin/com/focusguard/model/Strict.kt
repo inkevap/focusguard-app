@@ -27,7 +27,7 @@ enum class StrictProtection {
     /** Cerrar la pantalla de apps recientes. */
     RECENTS,
 
-    /** Impedir la pantalla dividida con una app bloqueada. */
+    /** Impedir la pantalla dividida (A16): solo la división real, confirmada tras una espera (ver `SplitScreen`). */
     SPLIT_SCREEN,
 
     /** Cerrar el menú de apagado y reinicio (A19, H6). */

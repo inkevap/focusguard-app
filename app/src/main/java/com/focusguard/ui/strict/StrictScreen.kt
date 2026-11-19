@@ -203,7 +203,7 @@ private fun ProtectsGroup(draft: StrictDraft) {
         ProtectionRow(draft, "No editar perfiles", "Ni apagarlos ni borrarlos mientras hay un bloqueo.", StrictProtection.EDIT_LOCK)
         ProtectionRow(draft, "Cerrar los ajustes que desactivan la app", "Accesibilidad, administrador, información de la app y desinstalar.", StrictProtection.SETTINGS_GUARD)
         ProtectionRow(draft, "Bloquear apps recientes", null, StrictProtection.RECENTS)
-        ProtectionRow(draft, "Impedir la pantalla dividida", null, StrictProtection.SPLIT_SCREEN)
+        ProtectionRow(draft, "Impedir la pantalla dividida", "Cierra dos apps a la vez en pantalla dividida. Espera un instante para no confundirse con el teclado ni con cambiar de app.", StrictProtection.SPLIT_SCREEN)
         ProtectionRow(draft, "Cerrar el menú de apagado", "Cierra el menú al pulsar largo el botón de encendido. No impide reiniciar con los botones.", StrictProtection.POWER_MENU)
         ProtectionRow(draft, "Cerrar los diálogos de compra", "Las compras dentro de apps (Google Play). Se comprueba en cada teléfono.", StrictProtection.PURCHASE_DIALOGS)
         ProtectionRow(draft, "Cerrar el administrador de tareas y el cambio de usuario", "Servicios en ejecución y añadir un usuario o invitado, que se saltarían el bloqueo.", StrictProtection.TASK_MANAGER)

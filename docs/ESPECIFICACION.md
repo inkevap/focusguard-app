@@ -76,7 +76,7 @@ Evita que el usuario se salte sus propios bloqueos.
 - No acceder a los ajustes del teléfono (pantalla de la app, accesibilidad, administradores, desinstalar).
 - No desinstalar la app.
 - No usar la pantalla de apps recientes.
-- No usar pantalla dividida.
+- No usar pantalla dividida: solo la división real (el divisor del sistema, o dos ventanas que reparten la pantalla) que dura 0,4 s; el teclado, cambiar de app y los visores a pantalla completa no cuentan.
 - Bloquear apps recién reinstaladas.
 
 ### Cómo se desbloquea o se pausa

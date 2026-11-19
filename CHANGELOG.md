@@ -1,5 +1,10 @@
 # Cambios
 
+## 0.8.6 (2026-11-19)
+
+- Vuelve el bloqueo de pantalla dividida, ahora fiable. Solo se considera dividida cuando el sistema informa del divisor entre las dos apps (o, si el teléfono no lo informa, cuando dos ventanas reparten la pantalla sin taparse y ninguna es de pantalla completa) y la situación dura unos 0,4 segundos. Cambiar de app, abrir el teclado, ver un estado de WhatsApp o la depuración inalámbrica ya no cuentan como división ni te llevan al inicio.
+- Con el modo estricto (o el compañero) y «Impedir la pantalla dividida», cualquier división se cierra. Sin esa protección, se cierra solo si una de las dos apps está bloqueada por tus perfiles.
+
 ## 0.8.4 (2026-11-18)
 
 - Nuevo ajuste «Bloquear pestañas privadas» en la detección de imágenes (encendido de serie). Las pestañas privadas de los navegadores (Brave, incógnito de Chrome) protegen la pantalla y la captura sale negra, así que la detección no podía revisarlas y dejaba pasar lo explícito. Con la detección encendida, un navegador en una pestaña privada se bloquea con un mensaje propio. Las apps que no son navegadores no se bloquean por esto. Apagar el ajuste pide aprobación de tu compañero si lo tienes, y no se puede con el modo estricto.

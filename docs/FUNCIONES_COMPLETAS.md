@@ -27,7 +27,7 @@ Convenciones: **[App]** corre en el teléfono; **[Srv]** necesita el servidor pr
 | A13 | Apps recomendadas al elegir qué bloquear: las 5 apps o webs que más usas, y las webs relacionadas de las apps elegidas | F2 |
 | A14 | Lista de ignoradas (no cuentan en estadísticas ni se bloquean), con valores por defecto editables | F2 |
 | A15 | Bloquear los diálogos de compra dentro de apps | F4 |
-| A16 | Detectar pantalla dividida y bloquear la app que corresponda | F2 |
+| A16 | Detectar pantalla dividida real (divisor del sistema, o dos ventanas que reparten la pantalla, durante 0,4 s) y bloquear si una de las apps está bloqueada; con el modo estricto se cierra cualquier división | F2 |
 | A17 | Bloquear el administrador de tareas en segundo plano y el cambio de usuario | F4 |
 | A18 | Bloquear el panel de notificaciones desplegable (opción) | F3 |
 | A19 | Bloquear el menú de apagado y reinicio | F3 |

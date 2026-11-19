@@ -19,6 +19,8 @@ import android.os.Build
 import android.os.Bundle
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
+import android.graphics.Rect
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.widget.Toast
@@ -89,6 +91,10 @@ import com.focusguard.decision.Pomodoro
 import com.focusguard.decision.ScreenInfo
 import com.focusguard.decision.SensitiveScreens
 import com.focusguard.decision.WindowEvents
+import com.focusguard.decision.SplitScreen
+import com.focusguard.decision.SplitScreenTracker
+import com.focusguard.decision.WindowInfoLite
+import com.focusguard.decision.WindowKind
 import com.focusguard.decision.UninstallGuard
 import com.focusguard.decision.StatsSettings
 import com.focusguard.decision.StrictMode
@@ -171,6 +177,8 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
     private val permissionChecker: PermissionChecker by inject()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val handler = Handler(Looper.getMainLooper())
+    private val splitTracker = SplitScreenTracker()
+    private val splitRecheck = Runnable { checkSplitScreen() }
 
     private lateinit var browsers: BrowserTable
     private lateinit var prep: BrowserPrepRunner
@@ -292,6 +300,11 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (!::decider.isInitialized || event == null) return
         val type = event.eventType
+        // Un cambio en las ventanas (aparece o desaparece el divisor) es lo que revela la pantalla dividida.
+        if (type == AccessibilityEvent.TYPE_WINDOWS_CHANGED) {
+            checkSplitScreen()
+            return
+        }
         if (type != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED &&
             type != AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
         ) return
@@ -306,9 +319,6 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
         val now = clock.now()
 
         if (guardProtectedScreens(packageName, event.className?.toString(), type == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED, now)) return
-
-        // A16: en pantalla dividida, la ventana bloqueada cierra ambas aunque la activa esté permitida.
-        if (type == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED && blockedAppInSplitScreen()) return
 
         val state = currentState(packageName)
         // Teclado y barra del sistema no cambian lo que se usa; los cambios de contenido tampoco cambian de app.
@@ -358,6 +368,65 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
         Toast.makeText(this, getString(R.string.lock_reason_subapp, rule.label), Toast.LENGTH_SHORT).show()
     }
 
+    /** Las protecciones que valen ahora: las del modo estricto activo, las del compañero y, en pánico, la de ajustes. */
+    private fun activeProtections(now: Instant): Set<StrictProtection> {
+        val config = strictRepository.config.value
+        val strictActive = StrictMode.isActive(config, clock.localAt(now), now)
+        val panicActive = ProfileActivation.isPanicActive(profiles, now)
+        // Durante el pánico se cierran también los ajustes que apagan la app, como con la protección del modo estricto.
+        return buildSet {
+            if (strictActive) addAll(config.protections)
+            // Las protecciones que se eligieron para el compañero valen siempre que haya uno, con o sin modo estricto.
+            if (partnerRepository.isActive) addAll(settings.partnerPanel.value.active(settings.parentalMode.value).protections)
+            if (panicActive) add(StrictProtection.SETTINGS_GUARD)
+        }
+    }
+
+    /**
+     * A16 y la protección del modo estricto: solo con una pantalla dividida real (el divisor del sistema, o dos ventanas que reparten la
+     * pantalla; ver [SplitScreen]) y que dure [SplitScreenTracker.HOLD_MS], para no actuar en transiciones, con el teclado ni con visores
+     * a pantalla completa. Con la protección activa se cierra cualquier división; sin ella, solo si una de las dos apps está bloqueada.
+     */
+    private fun checkSplitScreen() {
+        handler.removeCallbacks(splitRecheck)
+        if (!::decider.isInitialized) return
+        val appWindows = mutableListOf<AccessibilityWindowInfo>()
+        val rect = Rect()
+        val lite = windows.map { w ->
+            w.getBoundsInScreen(rect)
+            val kind = when (w.type) {
+                AccessibilityWindowInfo.TYPE_APPLICATION -> WindowKind.APP
+                AccessibilityWindowInfo.TYPE_SPLIT_SCREEN_DIVIDER -> WindowKind.SPLIT_DIVIDER
+                else -> WindowKind.OTHER
+            }
+            if (kind == WindowKind.APP && !w.isInPictureInPictureMode) appWindows += w
+            WindowInfoLite(kind, rect.left, rect.top, rect.right, rect.bottom, w.isInPictureInPictureMode)
+        }
+        val metrics = DisplayMetrics()
+        @Suppress("DEPRECATION")
+        (getSystemService(WINDOW_SERVICE) as WindowManager).defaultDisplay.getRealMetrics(metrics)
+        val split = SplitScreen.isSplit(lite, metrics.widthPixels, metrics.heightPixels)
+        val nowMs = SystemClock.elapsedRealtime()
+        val confirmed = splitTracker.update(nowMs, split)
+        if (!split) return
+        if (!confirmed) {
+            splitTracker.remainingMs(nowMs)?.let { handler.postDelayed(splitRecheck, it + 30) }
+            return
+        }
+        if (StrictProtection.SPLIT_SCREEN in activeProtections(clock.now())) {
+            closeProtectedScreen(StrictProtection.SPLIT_SCREEN.screenName, BlockReason.STRICT_MODE)
+            return
+        }
+        for (window in appWindows) {
+            val pkg = window.root?.packageName?.toString() ?: continue
+            val decision = decide(stateOf(pkg))
+            if (decision is BlockDecision.Block) {
+                block(decision, pkg)
+                return
+            }
+        }
+    }
+
     private fun closeProtectedScreen(target: String, reason: BlockReason) {
         val nowMs = clock.nowMs()
         if (nowMs - lastGuardMs < MIN_BLOCK_INTERVAL_MS) return
@@ -377,16 +446,7 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
      * el reloj acorta esperas). Devuelve true si actuó.
      */
     private fun guardProtectedScreens(packageName: String, className: String?, windowChanged: Boolean, now: Instant): Boolean {
-        val config = strictRepository.config.value
-        val strictActive = StrictMode.isActive(config, clock.localAt(now), now)
-        val panicActive = ProfileActivation.isPanicActive(profiles, now)
-        // Durante el pánico se cierran también los ajustes que apagan la app, como con la protección del modo estricto.
-        val protections = buildSet {
-            if (strictActive) addAll(config.protections)
-            // Las protecciones que se eligieron para el compañero valen siempre que haya uno, con o sin modo estricto.
-            if (partnerRepository.isActive) addAll(settings.partnerPanel.value.active(settings.parentalMode.value).protections)
-            if (panicActive) add(StrictProtection.SETTINGS_GUARD)
-        }
+        val protections = activeProtections(now)
         val settingsGuarded = StrictProtection.SETTINGS_GUARD in protections
         val clockGuarded = settingsGuarded || approvals.mode.value != ApprovalMode.NONE
 
@@ -430,8 +490,6 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
             }
         }
 
-        // Consultar las ventanas es caro: solo cuando cambia una ventana, no en cada cambio de contenido.
-        val split = windowChanged && StrictProtection.SPLIT_SCREEN in protections && isSplitScreen()
         val protectedScreen = screen?.let { SensitiveScreens.classify(it, appLabel) }?.takeIf { it in protections }
         when {
             screen != null && clockGuarded && SensitiveScreens.isDateTimeSettings(screen) ->
@@ -441,7 +499,6 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
                 val uninstall = protectedScreen == StrictProtection.SETTINGS_GUARD && screen != null && SensitiveScreens.isUninstallScreen(screen)
                 closeProtectedScreen(if (uninstall) GuardTargets.UNINSTALL else protectedScreen.screenName, BlockReason.STRICT_MODE)
             }
-            split -> closeProtectedScreen(StrictProtection.SPLIT_SCREEN.screenName, BlockReason.STRICT_MODE)
             else -> return false
         }
         return true
@@ -480,24 +537,6 @@ class FocusAccessibilityService : AccessibilityService(), KoinComponent {
         }
         return false
     }
-
-    private fun blockedAppInSplitScreen(): Boolean {
-        val appWindows = windows.filter { it.type == AccessibilityWindowInfo.TYPE_APPLICATION && !it.isInPictureInPictureMode }
-        if (appWindows.size < 2) return false
-        for (window in appWindows) {
-            val pkg = window.root?.packageName?.toString() ?: continue
-            val decision = decide(stateOf(pkg))
-            if (decision is BlockDecision.Block) {
-                block(decision, pkg)
-                return true
-            }
-        }
-        return false
-    }
-
-    private fun isSplitScreen(): Boolean = windows.count {
-        it.type == AccessibilityWindowInfo.TYPE_APPLICATION && !it.isInPictureInPictureMode
-    } > 1
 
     override fun onInterrupt() = Unit
 
